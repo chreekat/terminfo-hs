@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 
 -- |
 -- Module      :  Terminfo
@@ -32,19 +32,66 @@ where
 
 import Development.Placeholders
 
-import Data.Text
+import Control.Applicative ((<$>), (<|>))
+import Control.Error
+import Control.Exception
+import Control.Monad ((<=<))
+import Data.Text (Text)
+import qualified Data.Text as T
+import System.Directory
+import System.FilePath
 
 data TIDatabase = TIDatabase
+
+data DBType = BerkeleyDB | DirTreeDB
 
 data BoolTermCap = BoolTermCap
 data NumTermCap = NumTermCap
 data StrTermCap = StrTermCap
 
+-- Old MacDonald had a farm...
+type EIO a = EitherT Text IO a
+
 acquireDatabase
     :: Text -- ^ Terminal name
-    -> IO (Maybe TIDatabase)
+    -> IO (Either Text TIDatabase)
        -- ^ A database object for the terminal, if it exists.
-acquireDatabase term = $(todo "acquireDatabase()")
+acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
+
+findDBFile :: Text -> EIO (DBType, FilePath)
+findDBFile term =  headET term >>= (\c ->
+    (findDirTreeDB c term)
+    <|> (findBerkeleyDB term)
+    <|> (left "No terminfo file found!"))
+  where
+    headET = hoistEither . headE "No terminal specified"
+
+headE :: Text -> Text -> Either Text Char
+headE e t =
+  if (T.length t) > 0
+     then Right $ T.head t
+     else Left e
+
+tiPath = "/" </> "usr" </> "share" </> "terminfo"
+
+findDirTreeDB c term = EitherT $ do
+    let file = tiPath </> [c] </> (T.unpack term)
+    e <- doesFileExist file
+    return $ if e
+       then Right (DirTreeDB, file)
+       else Left "No findings"
+
+findBerkeleyDB = const $ hoistEither
+    $ Left "BerkeleyDB support not implemented"
+
+
+parseDBFile :: (DBType, FilePath) -> EIO TIDatabase
+parseDBFile (db, f) = case db of
+    BerkeleyDB -> hoistEither $ Left "BerkeleyDB support not yet implemented"
+    DirTreeDB -> parseDirTreeDB f
+
+parseDirTreeDB :: FilePath -> EIO TIDatabase
+parseDirTreeDB = $notImplemented
 
 -- | This action wraps both nonexistent and false-valued capabilities into
 -- a return value of 'False'.
