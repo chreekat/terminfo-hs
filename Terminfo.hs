@@ -58,18 +58,16 @@ acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
 
 findDBFile :: String -> EIO (DBType, FilePath)
 findDBFile term = case term of
-    (c:_) -> dbFileM c term !? "No terminfo db found"
+    (c:_) -> noteT "No terminfo db found" $ dbFileM c term
     _     -> hoistEither $ Left "User specified null terminal name"
 
-dbFileM c term = dirTreeDB c term <|?|> berkeleyDB
-  where
-    m1 <|?|> m2 = runMaybeT $ ((MaybeT m1) <|> (MaybeT m2))
+dbFileM c term = dirTreeDB c term <|> berkeleyDB
 
 -- | Not implemented
-berkeleyDB = return Nothing
+berkeleyDB = nothing
 
-dirTreeDB :: Char -> String -> IO (Maybe (DBType, FilePath))
-dirTreeDB c term = do
+dirTreeDB :: Char -> String -> MaybeT IO (DBType, FilePath)
+dirTreeDB c term = MaybeT $ do
     home <- lookupEnv "HOME"
     path <- findFirst $ dirTreeDBLocs c term home
     return $ (,) DirTreeDB <$> path
