@@ -34,9 +34,9 @@ import Development.Placeholders
 
 import Control.Applicative ((<$>), (<|>))
 import Control.Error
-import Control.Exception
-import Control.Monad ((<=<))
+import Control.Monad ((<=<), filterM)
 import System.Directory
+import System.Environment (lookupEnv)
 import System.FilePath
 
 data TIDatabase = TIDatabase
@@ -48,47 +48,54 @@ data NumTermCap = NumTermCap
 data StrTermCap = StrTermCap
 
 -- Old MacDonald had a farm...
-type EIO a = EitherT String IO a
+type Err a = Either String a
 
 acquireDatabase
     :: String -- ^ Terminal name
     -> IO (Either String TIDatabase)
        -- ^ A database object for the terminal, if it exists.
-acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
-
-findDBFile :: String -> EIO (DBType, FilePath)
-findDBFile term =  headET term >>= (\c ->
-    (findDirTreeDB c term)
-    <|> (findBerkeleyDB term)
-    <|> (left "No terminfo file found!"))
+acquireDatabase =
+    parseDBFile
+    <=!=< findDBFile
   where
-    headET = hoistEither . headE "No terminal specified"
+    e1 <=!=< e2 = runEitherT . ((EitherT . e1) <=< (EitherT . e2))
 
-headE :: String -> String -> Either String Char
-headE e t =
-  if (T.length t) > 0
-     then Right $ T.head t
-     else Left e
+findDBFile :: String -> IO (Err (DBType, FilePath))
+findDBFile term = runEitherT $ case term of
+    (c:_) -> dbFileM c term !? "No terminfo db found"
+    _     -> hoistEither $ Left "User specified null terminal name"
 
-tiPath = "/" </> "usr" </> "share" </> "terminfo"
+dbFileM c term = dirTreeDB c term <|?|> berkeleyDB
+  where
+    m1 <|?|> m2 = runMaybeT $ ((MaybeT m1) <|> (MaybeT m2))
 
-findDirTreeDB c term = EitherT $ do
-    let file = tiPath </> [c] </> (T.unpack term)
-    e <- doesFileExist file
-    return $ if e
-       then Right (DirTreeDB, file)
-       else Left "No findings"
+-- | Not implemented
+berkeleyDB = return Nothing
 
-findBerkeleyDB = const $ hoistEither
-    $ Left "BerkeleyDB support not implemented"
+dirTreeDB :: Char -> String -> IO (Maybe (DBType, FilePath))
+dirTreeDB c term = do
+    home <- lookupEnv "HOME"
+    path <- findFirst $ dirTreeDBLocs c term home
+    return $ (,) DirTreeDB <$> path
 
+dirTreeDBLocs :: Char -> String -> Maybe FilePath -> [FilePath]
+dirTreeDBLocs c term home = catMaybes
+    [ home <$/> ".terminfo" </> [c] </> term
+    , Just $ "/" </> "usr" </> "share" </> "terminfo" </> [c] </> term
+    ]
 
-parseDBFile :: (DBType, FilePath) -> EIO TIDatabase
+findFirst :: [FilePath] -> IO (Maybe FilePath)
+findFirst = fmap headMay . filterM doesFileExist
+
+parseDBFile :: (DBType, FilePath) -> IO (Err TIDatabase)
 parseDBFile (db, f) = case db of
-    BerkeleyDB -> hoistEither $ Left "BerkeleyDB support not yet implemented"
+    BerkeleyDB -> return $ Left "BerkeleyDB support not yet implemented"
     DirTreeDB -> parseDirTreeDB f
 
-parseDirTreeDB :: FilePath -> EIO TIDatabase
+fa <$/> b = fmap (</> b) fa
+infixr 4 <$/>
+
+parseDirTreeDB :: FilePath -> IO (Err TIDatabase)
 parseDirTreeDB = $notImplemented
 
 -- | This action wraps both nonexistent and false-valued capabilities into
