@@ -48,20 +48,16 @@ data NumTermCap = NumTermCap
 data StrTermCap = StrTermCap
 
 -- Old MacDonald had a farm...
-type Err a = Either String a
+type EIO = EitherT String IO
 
 acquireDatabase
     :: String -- ^ Terminal name
     -> IO (Either String TIDatabase)
        -- ^ A database object for the terminal, if it exists.
-acquireDatabase =
-    parseDBFile
-    <=!=< findDBFile
-  where
-    e1 <=!=< e2 = runEitherT . ((EitherT . e1) <=< (EitherT . e2))
+acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
 
-findDBFile :: String -> IO (Err (DBType, FilePath))
-findDBFile term = runEitherT $ case term of
+findDBFile :: String -> EIO (DBType, FilePath)
+findDBFile term = case term of
     (c:_) -> dbFileM c term !? "No terminfo db found"
     _     -> hoistEither $ Left "User specified null terminal name"
 
@@ -87,15 +83,15 @@ dirTreeDBLocs c term home = catMaybes
 findFirst :: [FilePath] -> IO (Maybe FilePath)
 findFirst = fmap headMay . filterM doesFileExist
 
-parseDBFile :: (DBType, FilePath) -> IO (Err TIDatabase)
+parseDBFile :: (DBType, FilePath) -> EIO TIDatabase
 parseDBFile (db, f) = case db of
-    BerkeleyDB -> return $ Left "BerkeleyDB support not yet implemented"
     DirTreeDB -> parseDirTreeDB f
+    BerkeleyDB -> hoistEither $ Left "BerkeleyDB support not yet implemented"
 
 fa <$/> b = fmap (</> b) fa
 infixr 4 <$/>
 
-parseDirTreeDB :: FilePath -> IO (Err TIDatabase)
+parseDirTreeDB :: FilePath -> EIO TIDatabase
 parseDirTreeDB = $notImplemented
 
 -- | This action wraps both nonexistent and false-valued capabilities into
