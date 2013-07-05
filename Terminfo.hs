@@ -36,8 +36,6 @@ import Control.Applicative ((<$>), (<|>))
 import Control.Error
 import Control.Exception
 import Control.Monad ((<=<))
-import Data.Text (Text)
-import qualified Data.Text as T
 import System.Directory
 import System.FilePath
 
@@ -50,15 +48,15 @@ data NumTermCap = NumTermCap
 data StrTermCap = StrTermCap
 
 -- Old MacDonald had a farm...
-type EIO a = EitherT Text IO a
+type EIO a = EitherT String IO a
 
 acquireDatabase
-    :: Text -- ^ Terminal name
-    -> IO (Either Text TIDatabase)
+    :: String -- ^ Terminal name
+    -> IO (Either String TIDatabase)
        -- ^ A database object for the terminal, if it exists.
 acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
 
-findDBFile :: Text -> EIO (DBType, FilePath)
+findDBFile :: String -> EIO (DBType, FilePath)
 findDBFile term =  headET term >>= (\c ->
     (findDirTreeDB c term)
     <|> (findBerkeleyDB term)
@@ -66,7 +64,7 @@ findDBFile term =  headET term >>= (\c ->
   where
     headET = hoistEither . headE "No terminal specified"
 
-headE :: Text -> Text -> Either Text Char
+headE :: String -> String -> Either String Char
 headE e t =
   if (T.length t) > 0
      then Right $ T.head t
@@ -111,7 +109,7 @@ queryNumTermCap = $notImplemented
 -- probably in a separate module.
 queryStrTermCap :: TIDatabase
                 -> StrTermCap
-                -> Maybe Text
+                -> Maybe String
 queryStrTermCap = $notImplemented
 
 -- $queryFuncs
