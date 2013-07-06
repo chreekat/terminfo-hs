@@ -1,4 +1,5 @@
-{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module      :  Terminfo
@@ -35,11 +36,15 @@ import Development.Placeholders
 import Control.Applicative ((<$>), (<|>))
 import Control.Error
 import Control.Monad ((<=<), filterM)
+import qualified Data.ByteString as B
+import Data.ByteString (ByteString)
 import System.Directory
 import System.Environment (lookupEnv)
 import System.FilePath
+import System.IO
 
-data TIDatabase = TIDatabase
+import Terminfo.Internal
+import Terminfo.DirTreeDB
 
 data DBType = BerkeleyDB | DirTreeDB
 
@@ -83,14 +88,22 @@ findFirst = fmap headMay . filterM doesFileExist
 
 parseDBFile :: (DBType, FilePath) -> EIO TIDatabase
 parseDBFile (db, f) = case db of
-    DirTreeDB -> parseDirTreeDB f
+    DirTreeDB -> extractDirTreeDB f
     BerkeleyDB -> hoistEither $ Left "BerkeleyDB support not yet implemented"
 
 fa <$/> b = fmap (</> b) fa
 infixr 4 <$/>
 
-parseDirTreeDB :: FilePath -> EIO TIDatabase
-parseDirTreeDB = $notImplemented
+-- | Extract a 'TIDatabase' from the specified file. IO exceptions are left
+-- to their own devices.
+extractDirTreeDB :: FilePath
+                 -> EIO TIDatabase
+extractDirTreeDB =
+    hoistEither . parseDirTreeDB
+    <=< rightT . B.hGetContents
+    <=< rightT . (flip openBinaryFile ReadMode)
+  where
+    rightT = EitherT . (fmap Right)
 
 -- | This action wraps both nonexistent and false-valued capabilities into
 -- a return value of 'False'.
