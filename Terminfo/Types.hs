@@ -1,5 +1,13 @@
-module Terminfo.Internal
+{-# LANGUAGE TemplateHaskell #-}
+
+module Terminfo.Types
     ( TIDatabase(..)
+    , BoolFlags(..)
     ) where
 
-data TIDatabase = TIDatabase
+import Terminfo.TH
+
+mkBoolFlags
+
+data TIDatabase = TIDatabase BoolFlags
+    deriving (Show)
