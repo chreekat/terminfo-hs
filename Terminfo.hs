@@ -43,7 +43,7 @@ import System.Environment (lookupEnv)
 import System.FilePath
 import System.IO
 
-import Terminfo.Internal
+import Terminfo.Types
 import Terminfo.DirTreeDB
 
 data DBType = BerkeleyDB | DirTreeDB

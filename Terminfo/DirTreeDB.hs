@@ -19,7 +19,7 @@ import Development.Placeholders
 
 import Data.ByteString (ByteString)
 
-import Terminfo.Internal
+import Terminfo.Types
 
 parseDirTreeDB :: ByteString -> Either String TIDatabase
 parseDirTreeDB = $notImplemented
