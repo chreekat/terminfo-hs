@@ -27,11 +27,12 @@ import Data.List (foldl')
 import Language.Haskell.TH
 import System.IO.Unsafe (unsafePerformIO)
 
--- |
--- The canonical source
+--
+-- The canonical sources
 --
 
-theList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
+boolList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
+numberList = unsafePerformIO $ lines <$> readFile "numberTermCaps"
 
 -- |
 -- This splice generates the data definition
@@ -43,18 +44,18 @@ theList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
 --
 -- which is used internally, as part of 'TIDatabase'
 
-mkBoolFlags = fmap (:[]) $ mkBoolFlags' theList
+mkCaps = sequence $
+    [ mkCaps' (mkName "BoolCaps") [t|Bool|] boolList
+    , mkCaps' (mkName "NumCaps") [t|Int|] numberList
+    ]
 
-mkBoolFlags' flags =
-    dataD (cxt []) (mkName "BoolFlags") [] [dCon flags] [mkName "Show"]
+mkCaps' name typ flags =
+    dataD (cxt []) name [] [dCon' name typ flags] [mkName "Show"]
+  where
+    dCon' name typ = recC name . map (mkTypRec typ)
 
-dCon :: [String] -> ConQ
-dCon = recC (mkName "BoolFlags") . map mkBoolRec
-
-mkBoolRec :: String -> VarStrictTypeQ
-mkBoolRec flag = do
-    bool <- [t|Bool|]
-    return (mkName flag, NotStrict, bool)
+    mkTypRec typ flag = typ >>=
+        (\t -> return $ (mkName flag, NotStrict, t))
 
 -- |
 -- This splice generates the data definition for 'Terminfo.BoolTermCap'.
@@ -79,7 +80,7 @@ mkBoolTermCap' ls = dataD (cxt []) (mkName "BoolTermCap") [] ctors []
 -- which is used in parsing the bool section of terminfo files.
 --
 
-mkBoolSetters = mkBoolSetters' theList
+mkBoolSetters = mkBoolSetters' boolList
 
 mkBoolSetters' ::[String] -> ExpQ
 mkBoolSetters' = listE . map mkSetter
