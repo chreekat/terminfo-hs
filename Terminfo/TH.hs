@@ -10,10 +10,10 @@
 -- (*-Setters), and *-CapValues' mempty expressions.
 --
 -- Rather than specify the flags four separate times, I will use TH to
--- generate the four bits of code from a single canonical list. Right now,
--- those canonical lists are kept in standalone files. I may later choose
--- to make one definition the golden standard, and generate the others
--- through reification, but ...
+-- generate the four bits of code from a single canonical list. Right
+-- now, those canonical lists are kept in standalone files. I may later
+-- choose to make one definition the golden standard, and generate the
+-- others through reification, but ...
 
 module Terminfo.TH
     ( mkCapValues
@@ -79,11 +79,11 @@ which are part of the public API.
 -}
 
 mkTermCaps = sequence $
-    [ mkTermCap' "BoolTermCap" boolList
-    , mkTermCap' "NumTermCap" numberList
+    [ mkTermCap "BoolTermCap" boolList
+    , mkTermCap "NumTermCap" numberList
     ]
 
-mkTermCap' name ls = dataD (cxt []) (mkName name) [] ctors []
+mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
   where
     ctors = map ctor ls
     ctor l = normalC (mkName $ upCase l) []
@@ -93,41 +93,26 @@ mkTermCap' name ls = dataD (cxt []) (mkName name) [] ctors []
 {- |
 This splice generates the expression
 
-> [ \obj -> obj { autoLeftMargin = True }, ... ]
-
-which is used in parsing the bool section of terminfo files.
--}
-
-
-mkBoolSetters = mkBoolSetters' boolList
-
-mkBoolSetters' ::[String] -> ExpQ
-mkBoolSetters' = listE . map mkSetter
-
-mkSetter f = do
-    let fName = mkName f
-    obj <- newName "obj"
-    true <- [|True|]
-    let fieldPair = return (fName, true)
-    let upd = recUpdE (varE obj) [fieldPair]
-    lamE [varP obj] upd
-
-{- |
-This splice generates the expression
-
-> [ \val obj -> obj { autoLeftMargin = val }, ... ]
+> [ \val obj -> obj { $(name) = val }, ... ]
 
 which is used in parsing the numbers section of terminfo files.
 -}
 
-mkNumSetters = mkNumSetters' numberList
 
-mkNumSetters' :: [String] -> ExpQ
-mkNumSetters' = listE . map mkSetter'
+mkBoolSetters = mkSetters boolList
+mkNumSetters = mkSetters numberList
 
-mkSetter' cap = do
+mkSetters ::[String] -> ExpQ
+mkSetters = listE . map mkSetter
+
+-- TODO: lens cleanup candidate
+mkSetter cap = do
+    -- Sadly, I can't seem to use splicing inside a quasiquoted rec
+    -- update. Syntax error.
     obj <- newName "obj"
     val <- newName "val"
+    -- Yeah, a little fragile here. Hooray compile-time errors?
+    -- TODO: Try using lookupValueName!
     let fName = mkName $ "Terminfo.Types." ++ cap
         fieldPair = (fName, VarE val)
         upd = RecUpdE (VarE obj) [fieldPair]

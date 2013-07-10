@@ -71,20 +71,20 @@ tiDatabase = do
 boolCaps :: Int -> Parser BoolCapValues
 boolCaps sz = do
     bytes <- B.unpack <$> A.take sz
-    let setters = catMaybes $ zipWith trim bytes $mkBoolSetters
+    let setters = zipWith fixVal bytes $mkBoolSetters
     return $ foldl' (flip ($)) ($mkBoolCapsMempty) setters
   where
-    trim b f = if b == 1
-                  then Just f
-                  else Nothing
+    fixVal b f = if b == 1
+                    then f True
+                    else f False
 
 numCaps :: Int -> Parser NumCapValues
 numCaps cnt = do
     ints <- A.count cnt anyShortInt
-    let setters = zipWith setVal ints $mkNumSetters
+    let setters = zipWith fixVal ints $mkNumSetters
     return $ foldl' (flip ($)) ($mkNumCapsMempty) setters
   where
-    setVal n f = if n /= (-1)
+    fixVal n f = if n /= (-1)
                     then f $ Just n
                     else f Nothing
 
