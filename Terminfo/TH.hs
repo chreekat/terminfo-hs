@@ -31,7 +31,7 @@ import System.IO.Unsafe (unsafePerformIO)
 -- The canonical source
 --
 
-theList = unsafePerformIO $ lines <$> readFile "boolFlags"
+theList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
 
 -- |
 -- This splice generates the data definition
