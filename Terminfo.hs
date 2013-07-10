@@ -45,11 +45,11 @@ import System.IO
 
 import Terminfo.Types
 import Terminfo.DirTreeDB
+import Terminfo.TH
 
 data DBType = BerkeleyDB | DirTreeDB
 
-data BoolTermCap = BoolTermCap
-data NumTermCap = NumTermCap
+mkTermCaps
 data StrTermCap = StrTermCap
 
 -- Old MacDonald had a farm...

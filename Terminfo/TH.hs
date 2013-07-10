@@ -17,7 +17,7 @@
 
 module Terminfo.TH
     ( mkCapValues
-    , mkBoolTermCap
+    , mkTermCaps
     , mkBoolSetters
     , mkBoolCapsMempty
     ) where
@@ -76,9 +76,12 @@ data NumTermCap = Columns | ...
 which are part of the public API.
 -}
 
-mkBoolTermCap = fmap (:[]) $ mkBoolTermCap' boolList
+mkTermCaps = sequence $
+    [ mkTermCap' "BoolTermCap" boolList
+    , mkTermCap' "NumTermCap" numberList
+    ]
 
-mkBoolTermCap' ls = dataD (cxt []) (mkName "BoolTermCap") [] ctors []
+mkTermCap' name ls = dataD (cxt []) (mkName name) [] ctors []
   where
     ctors = map ctor ls
     ctor l = normalC (mkName $ upCase l) []
