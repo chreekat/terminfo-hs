@@ -19,7 +19,9 @@ module Terminfo.TH
     ( mkCapValues
     , mkTermCaps
     , mkBoolSetters
+    , mkNumSetters
     , mkBoolCapsMempty
+    , mkNumCapsMempty
     ) where
 
 import Development.Placeholders
@@ -53,7 +55,7 @@ which are used internally, as part of 'TIDatabase'
 
 mkCapValues = sequence $
     [ mkCaps' (mkName "BoolCapValues") [t|Bool|] boolList
-    , mkCaps' (mkName "NumCapValues") [t|Int|] numberList
+    , mkCaps' (mkName "NumCapValues") [t|Maybe Int|] numberList
     ]
 
 mkCaps' name typ flags =
@@ -113,6 +115,27 @@ mkSetter f = do
 {- |
 This splice generates the expression
 
+> [ \val obj -> obj { autoLeftMargin = val }, ... ]
+
+which is used in parsing the numbers section of terminfo files.
+-}
+
+mkNumSetters = mkNumSetters' numberList
+
+mkNumSetters' :: [String] -> ExpQ
+mkNumSetters' = listE . map mkSetter'
+
+mkSetter' cap = do
+    obj <- newName "obj"
+    val <- newName "val"
+    let fName = mkName $ "Terminfo.Types." ++ cap
+        fieldPair = (fName, VarE val)
+        upd = RecUpdE (VarE obj) [fieldPair]
+    return $ LamE [VarP val, VarP obj] upd
+
+{- |
+This splice generates the expression
+
 > BoolCaps False False False ...
 
 also used for parsing the bool section
@@ -124,3 +147,11 @@ mkBoolCapsMempty' =
   foldl' (const . applyToFalse) (conE $ mkName "BoolCapValues")
 
 applyToFalse = flip appE [|False|]
+
+-- Blurp
+mkNumCapsMempty = mkNumCapsMempty' numberList
+
+mkNumCapsMempty' =
+  foldl' (const . applyToNothing) (conE $ mkName "NumCapValues")
+
+applyToNothing = flip appE [|Nothing|]

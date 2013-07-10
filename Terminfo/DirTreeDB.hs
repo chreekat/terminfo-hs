@@ -65,8 +65,8 @@ tiDatabase = do
     bools <- boolCaps boolSize
     -- Align on an even byte
     when (odd boolSize) (void $ A.take 1)
-    $(todo "The rest of the parser")
-    return $ TIDatabase bools
+    nums <- numCaps numIntegers
+    return $ TIDatabase bools nums
 
 boolCaps :: Int -> Parser BoolCapValues
 boolCaps sz = do
@@ -78,6 +78,16 @@ boolCaps sz = do
                   then Just f
                   else Nothing
 
+numCaps :: Int -> Parser NumCapValues
+numCaps cnt = do
+    ints <- A.count cnt anyShortInt
+    let setters = zipWith setVal ints $mkNumSetters
+    return $ foldl' (flip ($)) ($mkNumCapsMempty) setters
+  where
+    setVal n f = if n /= (-1)
+                    then f $ Just n
+                    else f Nothing
+
 -- | the magic number for term files
 magic :: Parser Int
 magic = shortInt 0o432
@@ -85,7 +95,7 @@ magic = shortInt 0o432
 data Header = Header
      { namesSize :: Int
      , boolSize :: Int
-     , numintegers :: Int
+     , numIntegers :: Int
      , numOffsets :: Int
      , stringSize :: Int
      }
