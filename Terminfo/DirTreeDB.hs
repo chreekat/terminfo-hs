@@ -62,17 +62,17 @@ tiDatabase = do
     Header{..} <- header
     -- Ignore names
     _ <- A.take namesSize
-    bools <- boolFlags boolSize
+    bools <- boolCaps boolSize
     -- Align on an even byte
     when (odd boolSize) (void $ A.take 1)
     $(todo "The rest of the parser")
     return $ TIDatabase bools
 
-boolFlags :: Int -> Parser BoolFlags
-boolFlags sz = do
+boolCaps :: Int -> Parser BoolCaps
+boolCaps sz = do
     bytes <- B.unpack <$> A.take sz
     let setters = catMaybes $ zipWith trim bytes $mkBoolSetters
-    return $ foldl' (flip ($)) ($mkBoolFlagsMempty) setters
+    return $ foldl' (flip ($)) ($mkBoolCapsMempty) setters
   where
     trim b f = if b == 1
                   then Just f

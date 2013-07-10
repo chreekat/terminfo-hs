@@ -4,19 +4,19 @@
 -- |
 -- Some phat template haskell for creating some things.
 --
--- Problem: there are four(?) bits of code that depend on the list of
--- boolean flags: BoolTermCap data constructors, BoolFlags record
--- accessors, the argument to 'zip' used in parsing the boolean flags
--- (boolSetters), and BoolFlags' mempty expression.
+-- Problem: there are four(?) bits of code that depend on the lists of
+-- term capabilities: *TermCap data constructors, *Caps record
+-- accessors, the argument to 'zip' used in parsing the flags
+-- (*Setters), and *Caps' mempty expression.
 --
 -- Rather than specify the flags four separate times, I will use TH to
 -- generate the four bits of code from a single canonical list.
 
 module Terminfo.TH
-    ( mkBoolFlags
+    ( mkCaps
     , mkBoolTermCap
     , mkBoolSetters
-    , mkBoolFlagsMempty
+    , mkBoolCapsMempty
     ) where
 
 import Development.Placeholders
@@ -37,7 +37,7 @@ theList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
 -- This splice generates the data definition
 --
 -- @
---   data BoolFlags = BoolFlags { autoLeftMargin :: Bool, ... }
+--   data BoolCaps = BoolCaps { autoLeftMargin :: Bool, ... }
 --       deriving (Show)
 -- @
 --
@@ -62,7 +62,7 @@ mkBoolRec flag = do
 -- > data BoolTermCap = AutoLeftMargin | ...
 --
 
-mkBoolTermCap = fmap (:[]) $ mkBoolTermCap' theList
+mkBoolTermCap = fmap (:[]) $ mkBoolTermCap' boolList
 
 mkBoolTermCap' ls = dataD (cxt []) (mkName "BoolTermCap") [] ctors []
   where
@@ -95,13 +95,13 @@ mkSetter f = do
 -- |
 -- This splice generates the expression
 --
--- > BoolFlags False False False ...
+-- > BoolCaps False False False ...
 --
 -- also used for parsing the bool section
 
-mkBoolFlagsMempty = mkBoolFlagsMempty' theList
+mkBoolCapsMempty = mkBoolCapsMempty' boolList
 
-mkBoolFlagsMempty' =
-  foldl' (const . applyToFalse) (conE $ mkName "BoolFlags")
+mkBoolCapsMempty' =
+  foldl' (const . applyToFalse) (conE $ mkName "BoolCaps")
 
 applyToFalse = flip appE [|False|]
