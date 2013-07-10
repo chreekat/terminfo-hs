@@ -50,7 +50,6 @@ import Terminfo.TH
 data DBType = BerkeleyDB | DirTreeDB
 
 mkTermCaps
-data StrTermCap = StrTermCap
 
 -- Old MacDonald had a farm...
 type EIO = EitherT String IO

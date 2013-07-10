@@ -69,7 +69,9 @@ tiDatabase = do
     -- Align on an even byte
     when (odd boolSize) (void $ A.take 1)
     nums <- numCaps numIntegers
-    return $ TIDatabase bools nums
+    strs <- stringCaps numOffsets stringSize
+    -- TODO: extended info
+    return $ TIDatabase bools nums strs
 
 boolCaps :: Int -> Parser BoolCapValues
 boolCaps sz = do
@@ -91,9 +93,15 @@ numCaps cnt = do
                     then f $ Just n
                     else f Nothing
 
+stringCaps :: Int -> Int -> Parser StrCapValues
+stringCaps numOffsets stringSize = do
+    offs <- A.count numOffsets anyShortInt
+    $(todo "Finish parsing strings")
+    return $mkStrCapsMempty
+
 -- | the magic number for term files
 magic :: Parser Int
-magic = shortInt 0o432
+magic = shortInt 0o432 <?> "Not a terminfo file (bad magic)"
 
 data Header = Header
      { namesSize :: Int

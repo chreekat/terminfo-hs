@@ -22,9 +22,8 @@ module Terminfo.TH
     , mkNumSetters
     , mkBoolCapsMempty
     , mkNumCapsMempty
+    , mkStrCapsMempty
     ) where
-
-import Development.Placeholders
 
 import Control.Applicative ((<$>))
 import Data.Char (toUpper)
@@ -39,6 +38,7 @@ import System.IO.Unsafe (unsafePerformIO)
 
 boolList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
 numberList = unsafePerformIO $ lines <$> readFile "numberTermCaps"
+stringList = unsafePerformIO $ lines <$> readFile "stringTermCaps"
 
 {-|
 This splice generates the data definitions
@@ -55,11 +55,12 @@ which are used internally, as part of 'TIDatabase'
 -}
 
 mkCapValues = sequence $
-    [ mkCaps' (mkName "BoolCapValues") [t|Bool|] boolList
-    , mkCaps' (mkName "NumCapValues") [t|Maybe Int|] numberList
+    [ mkCaps (mkName "BoolCapValues") [t|Bool|] boolList
+    , mkCaps (mkName "NumCapValues") [t|Maybe Int|] numberList
+    , mkCaps (mkName "StrCapValues") [t|Maybe String|] stringList
     ]
 
-mkCaps' name typ flags =
+mkCaps name typ flags =
     dataD (cxt []) name [] [dCon' name typ flags] [mkName "Show"]
   where
     dCon' name typ = recC name . map (mkTypRec typ)
@@ -82,6 +83,7 @@ which are part of the public API.
 mkTermCaps = sequence $
     [ mkTermCap "BoolTermCap" boolList
     , mkTermCap "NumTermCap" numberList
+    , mkTermCap "StrTermCap" stringList
     ]
 
 mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
@@ -131,6 +133,7 @@ also used for parsing the bool section
 
 mkBoolCapsMempty = mkMempty "BoolCapValues" [|False|] boolList
 mkNumCapsMempty = mkMempty "NumCapValues" [|Nothing|] numberList
+mkStrCapsMempty = mkMempty "StrCapValues" [|Nothing|] stringList
 
 -- At each point in the list, we apply the accumulator (which is a
 -- partially-applied data constructor) to the new element. At the end, we
