@@ -29,6 +29,7 @@ import Development.Placeholders
 import Control.Applicative ((<$>))
 import Data.Char (toUpper)
 import Data.List (foldl')
+import Data.Maybe (fromJust)
 import Language.Haskell.TH
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -111,32 +112,36 @@ mkSetter cap = do
     -- update. Syntax error.
     obj <- newName "obj"
     val <- newName "val"
-    -- Yeah, a little fragile here. Hooray compile-time errors?
-    -- TODO: Try using lookupValueName!
-    let fName = mkName $ "Terminfo.Types." ++ cap
-        fieldPair = (fName, VarE val)
+    fName <- fromJust <$> lookupValueName cap
+    let fieldPair = (fName, VarE val)
         upd = RecUpdE (VarE obj) [fieldPair]
     return $ LamE [VarP val, VarP obj] upd
 
 {- |
 This splice generates the expression
 
-> BoolCaps False False False ...
+> $(name) $(mempt) $(mempt) ...
+
+e.g.
+
+> BoolCapValues False False False ...
 
 also used for parsing the bool section
 -}
 
-mkBoolCapsMempty = mkBoolCapsMempty' boolList
+mkBoolCapsMempty = mkMempty "BoolCapValues" [|False|] boolList
+mkNumCapsMempty = mkMempty "NumCapValues" [|Nothing|] numberList
 
-mkBoolCapsMempty' =
-  foldl' (const . applyToFalse) (conE $ mkName "BoolCapValues")
+-- At each point in the list, we apply the accumulator (which is a
+-- partially-applied data constructor) to the new element. At the end, we
+-- should have a fully-applied (kind *) value of type name!
+--
+-- Note that the contents of the list are immaterial - hence the use of
+-- const.
+mkMempty :: String -> ExpQ -> [String] -> ExpQ
+mkMempty name mempt =
+  foldl' (const . applyToMempt)
+    (conE =<< fromJust <$> lookupValueName name)
 
-applyToFalse = flip appE [|False|]
-
--- Blurp
-mkNumCapsMempty = mkNumCapsMempty' numberList
-
-mkNumCapsMempty' =
-  foldl' (const . applyToNothing) (conE $ mkName "NumCapValues")
-
-applyToNothing = flip appE [|Nothing|]
+  where
+    applyToMempt = flip appE mempt
