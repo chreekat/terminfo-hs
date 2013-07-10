@@ -2,13 +2,13 @@
 
 module Terminfo.Types
     ( TIDatabase(..)
-    , BoolCaps(..)
-    , NumCaps(..)
+    , BoolCapValues(..)
+    , NumCapValues(..)
     ) where
 
 import Terminfo.TH
 
-mkCaps
+mkCapValues
 
-data TIDatabase = TIDatabase BoolCaps {- NumCaps -}
+data TIDatabase = TIDatabase BoolCapValues NumCapValues
     deriving (Show)

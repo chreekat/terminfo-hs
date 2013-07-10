@@ -5,15 +5,18 @@
 -- Some phat template haskell for creating some things.
 --
 -- Problem: there are four(?) bits of code that depend on the lists of
--- term capabilities: *TermCap data constructors, *Caps record
+-- term capabilities: *-TermCap data constructors, *-CapValues record
 -- accessors, the argument to 'zip' used in parsing the flags
--- (*Setters), and *Caps' mempty expression.
+-- (*-Setters), and *-CapValues' mempty expressions.
 --
 -- Rather than specify the flags four separate times, I will use TH to
--- generate the four bits of code from a single canonical list.
+-- generate the four bits of code from a single canonical list. Right now,
+-- those canonical lists are kept in standalone files. I may later choose
+-- to make one definition the golden standard, and generate the others
+-- through reification, but ...
 
 module Terminfo.TH
-    ( mkCaps
+    ( mkCapValues
     , mkBoolTermCap
     , mkBoolSetters
     , mkBoolCapsMempty
@@ -34,19 +37,23 @@ import System.IO.Unsafe (unsafePerformIO)
 boolList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
 numberList = unsafePerformIO $ lines <$> readFile "numberTermCaps"
 
--- |
--- This splice generates the data definition
---
--- @
---   data BoolCaps = BoolCaps { autoLeftMargin :: Bool, ... }
---       deriving (Show)
--- @
---
--- which is used internally, as part of 'TIDatabase'
+{-|
+This splice generates the data definitions
 
-mkCaps = sequence $
-    [ mkCaps' (mkName "BoolCaps") [t|Bool|] boolList
-    , mkCaps' (mkName "NumCaps") [t|Int|] numberList
+@
+data BoolCaps = BoolCaps { autoLeftMargin :: Bool, ... }
+    deriving (Show)
+
+data NumCaps = NumCaps { columns :: Int, ... }
+    deriving (Show)
+@
+
+which are used internally, as part of 'TIDatabase'
+-}
+
+mkCapValues = sequence $
+    [ mkCaps' (mkName "BoolCapValues") [t|Bool|] boolList
+    , mkCaps' (mkName "NumCapValues") [t|Int|] numberList
     ]
 
 mkCaps' name typ flags =
@@ -57,11 +64,17 @@ mkCaps' name typ flags =
     mkTypRec typ flag = typ >>=
         (\t -> return $ (mkName flag, NotStrict, t))
 
--- |
--- This splice generates the data definition for 'Terminfo.BoolTermCap'.
---
--- > data BoolTermCap = AutoLeftMargin | ...
---
+{- |
+This splice generates the data definitions
+
+@
+data BoolTermCap = AutoLeftMargin | ...
+
+data NumTermCap = Columns | ...
+@
+
+which are part of the public API.
+-}
 
 mkBoolTermCap = fmap (:[]) $ mkBoolTermCap' boolList
 
@@ -72,13 +85,14 @@ mkBoolTermCap' ls = dataD (cxt []) (mkName "BoolTermCap") [] ctors []
     upCase (c:cs) = (toUpper c) : cs
     upCase []     = []
 
--- |
--- This splice generates the expression
---
--- > [ \obj -> obj { autoLeftMargin = True }, ... ]
---
--- which is used in parsing the bool section of terminfo files.
---
+{- |
+This splice generates the expression
+
+> [ \obj -> obj { autoLeftMargin = True }, ... ]
+
+which is used in parsing the bool section of terminfo files.
+-}
+
 
 mkBoolSetters = mkBoolSetters' boolList
 
@@ -93,16 +107,17 @@ mkSetter f = do
     let upd = recUpdE (varE obj) [fieldPair]
     lamE [varP obj] upd
 
--- |
--- This splice generates the expression
---
--- > BoolCaps False False False ...
---
--- also used for parsing the bool section
+{- |
+This splice generates the expression
+
+> BoolCaps False False False ...
+
+also used for parsing the bool section
+-}
 
 mkBoolCapsMempty = mkBoolCapsMempty' boolList
 
 mkBoolCapsMempty' =
-  foldl' (const . applyToFalse) (conE $ mkName "BoolCaps")
+  foldl' (const . applyToFalse) (conE $ mkName "BoolCapValues")
 
 applyToFalse = flip appE [|False|]

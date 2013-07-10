@@ -68,7 +68,7 @@ tiDatabase = do
     $(todo "The rest of the parser")
     return $ TIDatabase bools
 
-boolCaps :: Int -> Parser BoolCaps
+boolCaps :: Int -> Parser BoolCapValues
 boolCaps sz = do
     bytes <- B.unpack <$> A.take sz
     let setters = catMaybes $ zipWith trim bytes $mkBoolSetters
