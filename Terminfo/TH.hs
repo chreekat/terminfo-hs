@@ -20,6 +20,7 @@ module Terminfo.TH
     , mkTermCaps
     , mkBoolSetters
     , mkNumSetters
+    , mkStrSetters
     , mkBoolCapsMempty
     , mkNumCapsMempty
     , mkStrCapsMempty
@@ -104,6 +105,7 @@ which is used in parsing the numbers section of terminfo files.
 
 mkBoolSetters = mkSetters boolList
 mkNumSetters = mkSetters numberList
+mkStrSetters = mkSetters stringList
 
 mkSetters ::[String] -> ExpQ
 mkSetters = listE . map mkSetter
