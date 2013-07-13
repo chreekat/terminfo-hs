@@ -33,7 +33,7 @@ where
 
 import Development.Placeholders
 
-import Control.Applicative ((<$>), (<|>))
+import Control.Applicative ((<$>), (<|>), (<*>), pure)
 import Control.Error
 import Control.Monad ((<=<), filterM)
 import qualified Data.ByteString as B
@@ -79,32 +79,34 @@ dirTreeDB c term = MaybeT $ do
     return $ (,) DirTreeDB <$> path
 
 dirTreeDBLocs :: IO [FilePath]
-dirTreeDBLocs = do
-    ovr <- lookupEnv "TERMINFO"
-    hom <- lookupEnv "HOME"
-    termdirs <- lookupEnv "TERMINFO_DIRS"
-    return $ dirTreeDBLocs' ovr hom termdirs
+dirTreeDBLocs = dirTreeDBLocs'
+    <$> lookupEnv "TERMINFO"
+    <*> (lookupEnv "HOME" <$$/> ".terminfo")
+    <*> lookupEnv "TERMINFO_DIRS"
+    <*> pure ["/lib/terminfo", "/usr/share/terminfo"]
+
+
+fa <$/> b = (</> b) <$> fa
+infixr 4 <$/>
+
+ffa <$$/> b = fmap (<$/> b) ffa
+infixr 4 <$$/>
 
 dirTreeDBLocs' :: (Maybe FilePath)
                -> (Maybe FilePath)
                -> (Maybe String)
                -> [FilePath]
-dirTreeDBLocs' ovr hom termdirs = case ovr of
+               -> [FilePath]
+dirTreeDBLocs' ovr usr termdirs defs = case ovr of
     Just override -> [override]
-    Nothing       -> user ++ system
+    Nothing       -> (catMaybes [usr]) ++ system
 
   where
-    user = case hom of
-        Just home -> [home </> ".terminfo"]
-        Nothing   -> []
-
     system = case termdirs of
         Just list -> parseTDVar list
-        Nothing   -> defaultSystemLocs
+        Nothing   -> defs
 
-    defaultSystemLocs = ["/lib/terminfo", "/usr/share/terminfo"]
-
-    parseTDVar = (replace "" defaultSystemLocs) . (split ':')
+    parseTDVar = (replace "" defs) . (split ':')
 
     -- | Replace an element with multiple replacements
     replace :: Eq a => a -> [a] -> [a] -> [a]
@@ -131,9 +133,6 @@ parseDBFile :: (DBType, FilePath) -> EIO TIDatabase
 parseDBFile (db, f) = case db of
     DirTreeDB -> extractDirTreeDB f
     BerkeleyDB -> hoistEither $ Left "BerkeleyDB support not yet implemented"
-
-fa <$/> b = fmap (</> b) fa
-infixr 4 <$/>
 
 -- | Extract a 'TIDatabase' from the specified file. IO exceptions are left
 -- to their own devices.
