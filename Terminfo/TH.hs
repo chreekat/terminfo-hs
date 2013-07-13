@@ -24,7 +24,12 @@ module Terminfo.TH
     , mkBoolCapsMempty
     , mkNumCapsMempty
     , mkStrCapsMempty
+    , mkBoolGetter
+    , mkNumGetter
+    , mkStrGetter
     ) where
+
+import Development.Placeholders
 
 import Control.Applicative ((<$>))
 import Data.Char (toUpper)
@@ -45,10 +50,13 @@ stringList = unsafePerformIO $ lines <$> readFile "stringTermCaps"
 This splice generates the data definitions
 
 @
-data BoolCaps = BoolCaps { autoLeftMargin :: Bool, ... }
+data BoolCapValues = BoolCapValues { autoLeftMargin :: Bool, ... }
     deriving (Show)
 
-data NumCaps = NumCaps { columns :: Int, ... }
+data NumCapValues = NumCapValues { columns :: Maybe Int, ... }
+    deriving (Show)
+
+data StrCapValues = NumCapValues { backTab :: Maybe String, ... }
     deriving (Show)
 @
 
@@ -76,6 +84,8 @@ This splice generates the data definitions
 data BoolTermCap = AutoLeftMargin | ...
 
 data NumTermCap = Columns | ...
+
+data StrTermCap = BackTab | ...
 @
 
 which are part of the public API.
@@ -91,8 +101,10 @@ mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
   where
     ctors = map ctor ls
     ctor l = normalC (mkName $ upCase l) []
-    upCase (c:cs) = (toUpper c) : cs
-    upCase []     = []
+
+-- Used below too
+upCase (c:cs) = (toUpper c) : cs
+upCase []     = []
 
 {- |
 This splice generates the expression
@@ -150,3 +162,41 @@ mkMempty name mempt =
 
   where
     applyToMempt = flip appE mempt
+
+-- |
+-- This splice generates the expression
+--
+-- @
+--   (\x -> case x of
+--       $(dcon1) -> $(getter1)
+--       $(dcon2) -> $(getter2)
+--       ...
+--       ) :: $(type)TermCap) -> $(type)CapValues -> $(valueType)
+--
+-- @
+--
+-- E.g.
+--
+-- @
+--   (\x -> case x of
+--       AutoLeftMargin -> autoLeftMargin
+--       ...
+--       ) :: BoolTermCap -> BoolCapValues -> Bool
+-- @
+--
+mkBoolGetter = mkGetter boolList
+mkNumGetter = mkGetter numberList
+mkStrGetter = mkGetter stringList
+
+-- LamE [VarP x_0]
+--      (CaseE (VarE x_0)
+--             [Match (ConP AutoLeftMargin [])
+--                    (NormalB (VarE autoLeftMargin)) []])
+mkGetter ls = do
+    x <- newName "x"
+    return $ LamE [VarP x] $
+        CaseE (VarE x) $
+            zipWith (\p b -> Match p b []) ctorPats getterBodies
+  where
+    ctorPats = map ((flip ConP []) . mkName . upCase) ls
+    getterBodies = map (NormalB . VarE . mkName) ls
