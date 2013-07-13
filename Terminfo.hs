@@ -39,13 +39,13 @@ import Control.Monad ((<=<), filterM)
 import qualified Data.ByteString as B
 import Data.ByteString (ByteString)
 import System.Directory
-import System.Environment (lookupEnv)
 import System.FilePath
 import System.IO
 
 import Terminfo.Types
 import Terminfo.DirTreeDB
 import Terminfo.TH
+import Terminfo.Internal (terminfoDBLocs)
 
 data DBType = BerkeleyDB | DirTreeDB
     deriving(Show)
@@ -75,56 +75,8 @@ berkeleyDB = nothing
 
 dirTreeDB :: Char -> String -> MaybeT IO (DBType, FilePath)
 dirTreeDB c term = MaybeT $ do
-    path <- findFirst =<< map (</> [c] </> term) <$> dirTreeDBLocs
+    path <- findFirst =<< map (</> [c] </> term) <$> terminfoDBLocs
     return $ (,) DirTreeDB <$> path
-
-dirTreeDBLocs :: IO [FilePath]
-dirTreeDBLocs = dirTreeDBLocs'
-    <$> lookupEnv "TERMINFO"
-    <*> (lookupEnv "HOME" <$$/> ".terminfo")
-    <*> lookupEnv "TERMINFO_DIRS"
-    <*> pure ["/lib/terminfo", "/usr/share/terminfo"]
-
-
-fa <$/> b = (</> b) <$> fa
-infixr 4 <$/>
-
-ffa <$$/> b = fmap (<$/> b) ffa
-infixr 4 <$$/>
-
-dirTreeDBLocs' :: (Maybe FilePath)
-               -> (Maybe FilePath)
-               -> (Maybe String)
-               -> [FilePath]
-               -> [FilePath]
-dirTreeDBLocs' ovr usr termdirs defs = case ovr of
-    Just override -> [override]
-    Nothing       -> (catMaybes [usr]) ++ system
-
-  where
-    system = case termdirs of
-        Just list -> parseTDVar list
-        Nothing   -> defs
-
-    parseTDVar = (replace "" defs) . (split ':')
-
-    -- | Replace an element with multiple replacements
-    replace :: Eq a => a -> [a] -> [a] -> [a]
-    replace old news = foldr (\x acc -> if x == old
-                                           then news ++ acc
-                                           else x : acc)
-                             []
-
--- | split, as seen in ByteString and Text, but for Strings.
-split s = foldr go [[]]
-  where
-    go c acc = if c /= s
-                  then unshift c acc
-                  else "" : acc
-
-    -- | /perldoc -f unshift/
-    unshift c (xs:xss) = (c:xs) : xss
-    unshift c []       = [[c]]
 
 findFirst :: [FilePath] -> IO (Maybe FilePath)
 findFirst = fmap headMay . filterM doesFileExist
