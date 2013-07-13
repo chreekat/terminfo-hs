@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 -- |
 -- Module      :  Terminfo
@@ -30,6 +31,8 @@ module Terminfo (
     -- $rationaleTID
     )
 where
+
+import Prelude hiding (lines)
 
 import Development.Placeholders
 
@@ -84,10 +87,11 @@ findFirst = fmap headMay . filterM doesFileExist
 parseDBFile :: (DBType, FilePath) -> EIO TIDatabase
 parseDBFile (db, f) = case db of
     DirTreeDB -> extractDirTreeDB f
-    BerkeleyDB -> hoistEither $ Left "BerkeleyDB support not yet implemented"
+    BerkeleyDB -> hoistEither
+        $ Left "BerkeleyDB support not yet implemented"
 
--- | Extract a 'TIDatabase' from the specified file. IO exceptions are left
--- to their own devices.
+-- | Extract a 'TIDatabase' from the specified file. IO exceptions are
+-- left to their own devices.
 extractDirTreeDB :: FilePath
                  -> EIO TIDatabase
 extractDirTreeDB =
@@ -100,36 +104,37 @@ extractDirTreeDB =
 queryBoolTermCap :: TIDatabase
                  -> BoolTermCap
                  -> Bool
-queryBoolTermCap = $notImplemented
+queryBoolTermCap (TIDatabase vals _ _) cap = ($mkBoolGetter cap) vals
 
 queryNumTermCap :: TIDatabase
                 -> NumTermCap
                 -> Maybe Int
-queryNumTermCap = $notImplemented
+queryNumTermCap (TIDatabase _ vals _) cap = ($mkNumGetter cap) vals
 
--- | As this is a dead simple module, no 'smart' handling of the returned
--- string is implemented. In particular, placeholders for buffer characters
--- and command arguments are left as-is. This will be rectified eventually,
--- probably in a separate module.
+-- | As this is a dead simple module, no 'smart' handling of the
+-- returned string is implemented. In particular, placeholders for
+-- buffer characters and command arguments are left as-is. This will be
+-- rectified eventually, probably in a separate module.
 queryStrTermCap :: TIDatabase
                 -> StrTermCap
                 -> Maybe String
-queryStrTermCap = $notImplemented
+queryStrTermCap (TIDatabase _ _ vals) cap = ($mkStrGetter cap) vals
 
 -- $queryFuncs
 --
--- For each of these three actions, the first argument is the database to
--- query, and the second argument is the capability to look up.
+-- For each of these three actions, the first argument is the database
+-- to query, and the second argument is the capability to look up.
 --
--- I'm not super proud of this interface, but it's the best I can manage at
--- present without requiring the user to use lots of mostly-empty case
--- expressions. Perhaps someone will suggest a more interesting solution.
+-- I'm not super proud of this interface, but it's the best I can manage
+-- at present without requiring the user to use lots of mostly-empty
+-- case expressions. Perhaps someone will suggest a more interesting
+-- solution.
 
 -- $rationaleTID
 --
 -- One could imagine a simpler interface that hides the TIDatabase type
--- entirely. This could be done naively by rolling 'acquireDatabase' into
--- the query actions, or more \'intelligently\' by creating some
+-- entirely. This could be done naively by rolling 'acquireDatabase'
+-- into the query actions, or more \'intelligently\' by creating some
 -- 'State'-based monad instance. But the first would read the db file on
 -- every query, which strikes me as entirely /too/ naive, and the second
 -- would force the user to add Yet Another Monad to their application's
