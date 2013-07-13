@@ -62,8 +62,10 @@ acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
 
 findDBFile :: String -> EIO (DBType, FilePath)
 findDBFile term = case term of
-    (c:_) -> noteT "No terminfo db found" $ dbFileM c term
+    (c:_) -> dbFileM c term `orLeft` "No terminfo db found"
     _     -> hoistEither $ Left "User specified null terminal name"
+  where
+    orLeft = flip noteT
 
 dbFileM c term = dirTreeDB c term <|> berkeleyDB
 
