@@ -48,6 +48,7 @@ import Terminfo.DirTreeDB
 import Terminfo.TH
 
 data DBType = BerkeleyDB | DirTreeDB
+    deriving(Show)
 
 mkTermCaps
 
@@ -74,15 +75,54 @@ berkeleyDB = nothing
 
 dirTreeDB :: Char -> String -> MaybeT IO (DBType, FilePath)
 dirTreeDB c term = MaybeT $ do
-    home <- lookupEnv "HOME"
-    path <- findFirst $ dirTreeDBLocs c term home
+    path <- findFirst =<< map (</> [c] </> term) <$> dirTreeDBLocs
     return $ (,) DirTreeDB <$> path
 
-dirTreeDBLocs :: Char -> String -> Maybe FilePath -> [FilePath]
-dirTreeDBLocs c term home = catMaybes
-    [ home <$/> ".terminfo" </> [c] </> term
-    , Just $ "/" </> "usr" </> "share" </> "terminfo" </> [c] </> term
-    ]
+dirTreeDBLocs :: IO [FilePath]
+dirTreeDBLocs = do
+    ovr <- lookupEnv "TERMINFO"
+    hom <- lookupEnv "HOME"
+    termdirs <- lookupEnv "TERMINFO_DIRS"
+    return $ dirTreeDBLocs' ovr hom termdirs
+
+dirTreeDBLocs' :: (Maybe FilePath)
+               -> (Maybe FilePath)
+               -> (Maybe String)
+               -> [FilePath]
+dirTreeDBLocs' ovr hom termdirs = case ovr of
+    Just override -> [override]
+    Nothing       -> user ++ system
+
+  where
+    user = case hom of
+        Just home -> [home </> ".terminfo"]
+        Nothing   -> []
+
+    system = case termdirs of
+        Just list -> parseTDVar list
+        Nothing   -> defaultSystemLocs
+
+    defaultSystemLocs = ["/lib/terminfo", "/usr/share/terminfo"]
+
+    parseTDVar = (replace "" defaultSystemLocs) . (split ':')
+
+    -- | Replace an element with multiple replacements
+    replace :: Eq a => a -> [a] -> [a] -> [a]
+    replace old news = foldr (\x acc -> if x == old
+                                           then news ++ acc
+                                           else x : acc)
+                             []
+
+-- | split, as seen in ByteString and Text, but for Strings.
+split s = foldr go [[]]
+  where
+    go c acc = if c /= s
+                  then unshift c acc
+                  else "" : acc
+
+    -- | /perldoc -f unshift/
+    unshift c (xs:xss) = (c:xs) : xss
+    unshift c []       = [[c]]
 
 findFirst :: [FilePath] -> IO (Maybe FilePath)
 findFirst = fmap headMay . filterM doesFileExist
@@ -106,8 +146,6 @@ extractDirTreeDB =
   where
     rightT = EitherT . (fmap Right)
 
--- | This action wraps both nonexistent and false-valued capabilities into
--- a return value of 'False'.
 queryBoolTermCap :: TIDatabase
                  -> BoolTermCap
                  -> Bool
