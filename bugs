@@ -1,4 +1,8 @@
 Try using reification in the TH | id:0f066dfb7447ab41f34ffabcbbe7401b64cb25eb
+Rewrite DirTreeDB, since it is ANY db | id:186b3680e573444be0396d866a37093a7549b83d
+Revisit the name Caps | id:1abc58757e67c1d663938b63a67e6cf60473bfda
 Make a canonical doc source | id:2c986f55a3167ba533598b0f8efecc7588dd2162
 readme for github | id:50470c2c11bc610e16b3156b035a6d98b004e5c7
 mkdir src, capabilities | id:53cc4f0f505b54a0daf476f3b4ecb178ad718654
+Use a map instead of a product type, then get monoids for free | id:723aba07ba7bb77e980b2a0a9705196991d5faeb
+Parse extended info | id:7bc76b980c6556bbe582177ffda36f2e09cb9beb
