@@ -15,7 +15,7 @@ prop_useOverride ovr =
     forAll oftenNull $ \defs ->
     classify (isNothing usr && isNothing tds && null defs)
         "Nothing else specified"$
-    classify (isJust usr && isJust tds && (not $ null defs))
+    classify (isJust usr && isJust tds && not (null defs))
         "Everything else specified"$
     locationsPure (Just ovr) usr tds defs == [ovr]
 
@@ -29,7 +29,7 @@ prop_includeHome usr =
         withUsr    = locationsPure Nothing (Just usr) tds defs
         withoutUsr = locationsPure Nothing Nothing    tds defs
     in
-    classify (isJust tds || (not $ null defs))
+    classify (isJust tds || not (null defs))
         "Something besides HOME specified"$
     withUsr == usr : withoutUsr
 
