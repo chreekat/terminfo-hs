@@ -172,23 +172,18 @@ mkMempty name mempt =
 -- |
 -- This splice generates the expression
 --
--- @
---   (\x -> case x of
---       $(dcon1) -> $(getter1)
---       $(dcon2) -> $(getter2)
---       ...
---       ) :: $(type)TermCap) -> $(type)CapValues -> $(valueType)
---
--- @
+-- > (\x -> case x of
+-- >     $(dcon1) -> $(getter1)
+-- >     $(dcon2) -> $(getter2)
+-- >     ...
+-- >     ) :: $(type)TermCap) -> $(type)CapValues -> $(valueType)
 --
 -- E.g.
 --
--- @
---   (\x -> case x of
---       AutoLeftMargin -> autoLeftMargin
---       ...
---       ) :: BoolTermCap -> BoolCapValues -> Bool
--- @
+-- > (\x -> case x of
+-- >     AutoLeftMargin -> autoLeftMargin
+-- >     ...
+-- >     ) :: BoolTermCap -> BoolCapValues -> Bool
 --
 mkBoolGetter = mkGetter boolList "B"
 mkNumGetter = mkGetter numberList "N"
