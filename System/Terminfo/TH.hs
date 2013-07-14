@@ -101,8 +101,7 @@ mkTermCaps = sequence
 mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
   where
     ctors = map ctor ls
-    ctor l = normalC (mkName $ pfx ++ upCase l) []
-    pfx = "TC" ++ [head name] ++ "_"
+    ctor l = normalC (mkName $ upCase l) []
 
 -- Used below too
 upCase (c:cs) = toUpper c : cs
@@ -185,20 +184,19 @@ mkMempty name mempt =
 -- >     ...
 -- >     ) :: BoolTermCap -> BoolCapValues -> Bool
 --
-mkBoolGetter = mkGetter boolList "B"
-mkNumGetter = mkGetter numberList "N"
-mkStrGetter = mkGetter stringList "S"
+mkBoolGetter = mkGetter boolList
+mkNumGetter = mkGetter numberList
+mkStrGetter = mkGetter stringList
 
 -- LamE [VarP x_0]
 --      (CaseE (VarE x_0)
 --             [Match (ConP AutoLeftMargin [])
 --                    (NormalB (VarE autoLeftMargin)) []])
-mkGetter ls ch = do
+mkGetter ls = do
     x <- newName "x"
     return $ LamE [VarP x] $
         CaseE (VarE x) $
             zipWith (\p b -> Match p b []) ctorPats getterBodies
   where
-    ctorPats = map (flip ConP [] . mkName . (pfx ++) . upCase) ls
-    pfx = "TC" ++ ch ++ "_"
+    ctorPats = map (flip ConP [] . mkName . upCase) ls
     getterBodies = map (NormalB . VarE . mkName . ("tc_" ++)) ls

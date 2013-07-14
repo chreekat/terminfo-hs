@@ -24,12 +24,14 @@
 -- to demonstrate its usage.
 --
 -- @
---  uglyExample :: IO (Maybe Int)
---  uglyExample = do
---      term \<- fromJust \<$> lookupEnv \"TERM\"
---      db \<- 'acquireDatabase' term
---      let maxColors (Right d) = 'queryNumTermCap' d 'TCN_MaxColors'
---      return $ maxColors db
+-- import System.Terminfo
+-- import System.Terminfo.Caps as C
+-- uglyExample :: IO (Maybe Int)
+-- uglyExample = do
+--     term \<- fromJust \<$> lookupEnv \"TERM\"
+--     db \<- 'acquireDatabase' term
+--     let maxColors (Right d) = 'queryNumTermCap' d C.'System.Terminfo.Caps.MaxColors'
+--     return $ maxColors db
 -- @
 --
 -- >>> uglyExample
@@ -39,7 +41,6 @@
 module System.Terminfo (
     -- * Acquiring a Database
       acquireDatabase
-    , TIDatabase
     -- * Querying Capabilities
     -- $queryFuncs
     , queryBoolTermCap
@@ -48,14 +49,10 @@ module System.Terminfo (
     -- * The Capabilities
     -- $capabilities
 
-    -- ** Boolean
-    , BoolTermCap(..)
-    -- ** Numeric
-    , NumTermCap(..)
-    -- ** String
-    , StrTermCap(..)
-    )
-where
+    -- * The Database Type
+    , TIDatabase
+
+    ) where
 
 import Control.Applicative ((<$>), (<|>), (<*>), pure)
 import Control.Error
@@ -70,11 +67,10 @@ import System.Terminfo.Types
 import System.Terminfo.DirTreeDB
 import System.Terminfo.TH
 import System.Terminfo.Internal (terminfoDBLocs)
+import System.Terminfo.Caps
 
 data DBType = BerkeleyDB | DirTreeDB
     deriving(Show)
-
-mkTermCaps
 
 -- Old MacDonald had a farm...
 type EIO = EitherT String IO
@@ -141,6 +137,9 @@ queryStrTermCap :: TIDatabase
                 -> Maybe String
 queryStrTermCap (TIDatabase _ _ vals) cap = $mkStrGetter cap vals
 
+--
+-- DOCUMENTATION
+--
 
 
 
@@ -155,34 +154,12 @@ queryStrTermCap (TIDatabase _ _ vals) cap = $mkStrGetter cap vals
 
 -- $capabilities
 --
+-- /see/ "System.Terminfo.Caps"
+--
 -- There are no less than 497 capabilities specified in term.h on my
 -- Intel-based Ubuntu 12.04 notebook (slightly fewer in the terminfo(5) man
 -- page). The naive way of making these available to the user is as data
--- constructors, and that is what I have done here. There are significant
--- drawbacks to this scheme, however.
+-- constructors, and that is what I have done here.
 --
--- The number of constructors absolutely crushes the namespace. I've tried
--- to make this a little nicer by adding the 'TCc_' prefix to each name,
--- but that is a questionable solution. ('c' is one of B, N, or S,
--- representing Bool, Num, and String respectively.)
---
--- Distressingly, GHC 7.6.3 eats up gobs of memory when compiling the
--- module that defines these constructors:
---
--- @
--- <<ghc: 4726807828 bytes, 9003 GCs, 50165760\/140188620 avg\/max bytes
--- residency (17 samples), 400M in use, 0.00 INIT (0.00 elapsed), 20.43 MUT
--- (25.41 elapsed), 27.01 GC (27.71 elapsed) :ghc>>
--- @
---
--- Frankly, this seems a bit buggy, but I haven't looked into it yet. In
--- the meanwhile, it makes compilation very slow!  Especially painful when
--- proofing Haddocks...
---
--- Finally, in order to stay DRY, I'm generating a large number of
--- expressions and data definitions with Template Haskell. I don't find
--- anything wrong with that solution, given the circumstances, but it does
--- make me question the circumstances.
---
--- Here follows the list of capabilities. For descriptions of these,
--- consult terminfo(5).
+-- The number of constructors absolutely crushes the namespace. I have
+-- sequestered them into their own module to try to alleviate the pain.

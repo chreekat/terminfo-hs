@@ -2,6 +2,7 @@ Lint everything | id:0017ea74471a493ca44bb11eecd2d6136aa579f1
 Write a better doc intro | id:1610cd596f069b045a41de011a0e48d273cb5ecf
 rename Terminal.Terminfo | id:1fb21c023a4bbac1f0885d78707592e01d63b35d
 Back to implicit prelude | id:29ba660db9c1024d53b0944f10bd68242fd15689
+Put Capabilities in their own module | id:2f8f638a65f46c43bc980526400469d4fbee2b01
 Remove Placeholders | id:3f024e7e5c9f470e88db17ee75c45ec057df6cdb
 Warn about compilation times | id:4b2ba2e1b26f61b65786fb73901706701bbc0428
 Rename Terminal to System. Stupid I know. | id:812f9f92101be3bdda52d935c74c7008b6804d8e
