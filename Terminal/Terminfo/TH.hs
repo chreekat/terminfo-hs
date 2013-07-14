@@ -63,11 +63,14 @@ data StrCapValues = NumCapValues { tc_backTab :: Maybe String, ... }
 which are used internally, as part of 'TIDatabase'
 -}
 
-mkCapValues = sequence
+mkCapValues = reportWarning msg >> sequence
     [ mkCaps (mkName "BoolCapValues") [t|Bool|] boolList
     , mkCaps (mkName "NumCapValues") [t|Maybe Int|] numberList
     , mkCaps (mkName "StrCapValues") [t|Maybe String|] stringList
     ]
+  where
+    msg = "This module contains a datatype with hundreds of records. In the author's\n"
+        ++ "    experience, compilation will take an inordinate amount of time."
 
 mkCaps name typ flags =
     dataD (cxt []) name [] [dCon name typ flags] [mkName "Show"]
@@ -116,7 +119,11 @@ which is used in parsing the numbers section of terminfo files.
 -}
 
 
-mkBoolSetters = mkSetters boolList
+mkBoolSetters = reportWarning msg >> mkSetters boolList
+  where
+    msg =      "This module makes use of a datatype with hundreds\n"
+        ++ "    of records. In the author's experience, compilation\n"
+        ++ "    will take an inordinate amount of time."
 mkNumSetters = mkSetters numberList
 mkStrSetters = mkSetters stringList
 

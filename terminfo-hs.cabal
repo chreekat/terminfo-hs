@@ -41,6 +41,8 @@ library
                        bytestring ==0.*, directory ==1.*,
                        filepath ==1.*, attoparsec ==0.*,
                        template-haskell ==2.*
+  -- With -O2, compilation time goes through the roof with datatypes with
+  -- hundreds of records.
   ghc-options:         -O0
 
 test-suite Terminal.Terminfo.Internal
