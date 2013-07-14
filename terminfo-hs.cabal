@@ -16,7 +16,6 @@ description:         This module accesses terminfo databases, which contain
                      fancy with the capabilities themselves; it merely
                      provides a means for accessing them.
 
-homepage:            https://github.com/chreekat/terminfo-hs
 license:             BSD3
 license-file:        LICENSE
 author:              Bryan Richter
@@ -25,6 +24,10 @@ copyright:           Bryan Richter, 2013
 category:            System
 build-type:          Simple
 cabal-version:       >=1.8
+
+source-repository head
+  type: git
+  location: https://github.com/chreekat/terminfo-hs
 
 library
   exposed-modules:     Terminal.Terminfo

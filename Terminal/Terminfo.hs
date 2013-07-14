@@ -7,12 +7,15 @@
 -- License     :  BSD-style
 -- Maintainer  :  bryan.richter@gmail.com
 --
--- This is a pure-Haskell (no FFI) module for interacting with terminfo
--- databases. These databases contain characteristics, or capabilities, for
--- terminal types such as screen, vt100, or xterm. These capabilities
--- include the idiosyncratic character sequences needed to send commands to
--- the terminal. For a deeper understanding of terminfo, consult the man
--- pages for term(5) and terminfo(5).
+-- This is a pure-Haskell (no FFI) module for accessing terminfo databases,
+-- which contain characteristics, or capabilities, for the various
+-- terminals such as screen, vt100, or xterm. Among other things, the
+-- capabilities include the idiosyncratic character sequences needed to
+-- send commands to the terminal. These commands include things like cursor
+-- movement.
+--
+-- For a deeper understanding of terminfo, consult the man pages for
+-- term(5) and terminfo(5).
 --
 -- There are three parts to this module: acquiring a terminfo database,
 -- querying the database, and defining the capabilities.
