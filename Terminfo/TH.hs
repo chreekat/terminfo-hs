@@ -50,32 +50,32 @@ stringList = unsafePerformIO $ lines <$> readFile "stringTermCaps"
 This splice generates the data definitions
 
 @
-data BoolCapValues = BoolCapValues { autoLeftMargin :: Bool, ... }
+data BoolCapValues = BoolCapValues { tc_autoLeftMargin :: Bool, ... }
     deriving (Show)
 
-data NumCapValues = NumCapValues { columns :: Maybe Int, ... }
+data NumCapValues = NumCapValues { tc_columns :: Maybe Int, ... }
     deriving (Show)
 
-data StrCapValues = NumCapValues { backTab :: Maybe String, ... }
+data StrCapValues = NumCapValues { tc_backTab :: Maybe String, ... }
     deriving (Show)
 @
 
 which are used internally, as part of 'TIDatabase'
 -}
 
-mkCapValues = sequence $
+mkCapValues = sequence
     [ mkCaps (mkName "BoolCapValues") [t|Bool|] boolList
     , mkCaps (mkName "NumCapValues") [t|Maybe Int|] numberList
     , mkCaps (mkName "StrCapValues") [t|Maybe String|] stringList
     ]
 
 mkCaps name typ flags =
-    dataD (cxt []) name [] [dCon' name typ flags] [mkName "Show"]
+    dataD (cxt []) name [] [dCon name typ flags] [mkName "Show"]
   where
-    dCon' name typ = recC name . map (mkTypRec typ)
+    dCon name typ = recC name . map (mkTypRec typ)
 
     mkTypRec typ flag = typ >>=
-        (\t -> return $ (mkName flag, NotStrict, t))
+        (\t -> return (mkName ("tc_"++flag), NotStrict, t))
 
 {- |
 This splice generates the data definitions
@@ -91,7 +91,7 @@ data StrTermCap = BackTab | ...
 which are part of the public API.
 -}
 
-mkTermCaps = sequence $
+mkTermCaps = sequence
     [ mkTermCap "BoolTermCap" boolList
     , mkTermCap "NumTermCap" numberList
     , mkTermCap "StrTermCap" stringList
@@ -100,10 +100,11 @@ mkTermCaps = sequence $
 mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
   where
     ctors = map ctor ls
-    ctor l = normalC (mkName $ upCase l) []
+    ctor l = normalC (mkName $ pfx ++ upCase l) []
+    pfx = "TC" ++ [head name] ++ "_"
 
 -- Used below too
-upCase (c:cs) = (toUpper c) : cs
+upCase (c:cs) = toUpper c : cs
 upCase []     = []
 
 {- |
@@ -128,8 +129,8 @@ mkSetter cap = do
     -- update. Syntax error.
     obj <- newName "obj"
     val <- newName "val"
-    fName <- fromJust <$> lookupValueName cap
-    let fieldPair = (fName, VarE val)
+    let fName = mkName $ "tc_" ++ cap
+        fieldPair = (fName, VarE val)
         upd = RecUpdE (VarE obj) [fieldPair]
     return $ LamE [VarP val, VarP obj] upd
 
@@ -184,19 +185,20 @@ mkMempty name mempt =
 --       ) :: BoolTermCap -> BoolCapValues -> Bool
 -- @
 --
-mkBoolGetter = mkGetter boolList
-mkNumGetter = mkGetter numberList
-mkStrGetter = mkGetter stringList
+mkBoolGetter = mkGetter boolList "B"
+mkNumGetter = mkGetter numberList "N"
+mkStrGetter = mkGetter stringList "S"
 
 -- LamE [VarP x_0]
 --      (CaseE (VarE x_0)
 --             [Match (ConP AutoLeftMargin [])
 --                    (NormalB (VarE autoLeftMargin)) []])
-mkGetter ls = do
+mkGetter ls ch = do
     x <- newName "x"
     return $ LamE [VarP x] $
         CaseE (VarE x) $
             zipWith (\p b -> Match p b []) ctorPats getterBodies
   where
-    ctorPats = map ((flip ConP []) . mkName . upCase) ls
-    getterBodies = map (NormalB . VarE . mkName) ls
+    ctorPats = map (flip ConP [] . mkName . (pfx ++) . upCase) ls
+    pfx = "TC" ++ ch ++ "_"
+    getterBodies = map (NormalB . VarE . mkName . ("tc_" ++)) ls
