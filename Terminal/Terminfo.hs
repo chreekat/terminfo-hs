@@ -145,8 +145,8 @@ queryStrTermCap (TIDatabase _ _ vals) cap = ($mkStrGetter cap) vals
 
 -- $queryFuncs
 --
--- For each of these three actions, the first argument is the database
--- to query, and the second argument is the capability to look up.
+-- For each of these three actions, the first argument is the database to
+-- query, and the second argument is the capability to look up.
 --
 -- I'm not super proud of this interface, but it's the best I can manage at
 -- present without requiring lots of mostly-empty case expressions. Perhaps
@@ -155,14 +155,14 @@ queryStrTermCap (TIDatabase _ _ vals) cap = ($mkStrGetter cap) vals
 -- $capabilities
 --
 -- There are no less than 497 capabilities specified in term.h on my
--- Intel-based Ubuntu 12.04 notebook (slightly fewer in the terminfo(5)
--- man page). The naive way of making these available to the user is as
--- data constructors, and that is what I have done here. There are
--- significant drawbacks to this scheme, however.
+-- Intel-based Ubuntu 12.04 notebook (slightly fewer in the terminfo(5) man
+-- page). The naive way of making these available to the user is as data
+-- constructors, and that is what I have done here. There are significant
+-- drawbacks to this scheme, however.
 --
--- The number of constructors absolutely crushes the namespace. I've
--- tried to make this a little nicer by adding the 'TCc_' prefix to each
--- name, but that is a questionable solution. ('c' is one of B, N, or S,
+-- The number of constructors absolutely crushes the namespace. I've tried
+-- to make this a little nicer by adding the 'TCc_' prefix to each name,
+-- but that is a questionable solution. ('c' is one of B, N, or S,
 -- representing Bool, Num, and String respectively.)
 --
 -- Distressingly, GHC 7.6.3 eats up gobs of memory when compiling the

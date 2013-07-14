@@ -4,16 +4,16 @@
 -- |
 -- Some phat template haskell for creating some things.
 --
--- Problem: there are four(?) bits of code that depend on the lists of
--- term capabilities: *-TermCap data constructors, *-CapValues record
--- accessors, the argument to 'zip' used in parsing the flags
--- (*-Setters), and *-CapValues' mempty expressions.
+-- Problem: there are four(?) bits of code that depend on the lists of term
+-- capabilities: *-TermCap data constructors, *-CapValues record accessors,
+-- the argument to 'zip' used in parsing the flags (*-Setters), and
+-- *-CapValues' mempty expressions.
 --
 -- Rather than specify the flags four separate times, I will use TH to
--- generate the four bits of code from a single canonical list. Right
--- now, those canonical lists are kept in standalone files. I may later
--- choose to make one definition the golden standard, and generate the
--- others through reification, but ...
+-- generate the four bits of code from a single canonical list. Right now,
+-- those canonical lists are kept in standalone files. I may later choose
+-- to make one definition the golden standard, and generate the others
+-- through reification, but ...
 
 module Terminal.Terminfo.TH
     ( mkCapValues

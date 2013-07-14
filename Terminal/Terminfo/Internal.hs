@@ -22,8 +22,8 @@ infixr 4 <$/>
 ffa <$$/> b = fmap (<$/> b) ffa
 infixr 4 <$$/>
 
--- | I hate this name. There is undoubtedly a better way of structuring
--- all of this, starting way up at 'dirTreeDB'.
+-- | I hate this name. There is undoubtedly a better way of structuring all
+-- of this, starting way up at 'dirTreeDB'.
 locationsPure :: (Maybe FilePath) -- ^ Override directory
               -> (Maybe FilePath) -- ^ $HOME
               -> (Maybe String)   -- ^ $TERMINFO_DIRS
