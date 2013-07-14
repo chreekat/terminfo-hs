@@ -1,6 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 -- |
 -- Module      :  Terminal.Terminfo.DirTreeDB
@@ -17,8 +16,6 @@ module Terminal.Terminfo.DirTreeDB
     ) where
 
 import Development.Placeholders
-
-import Prelude hiding (lines)
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when, void)
