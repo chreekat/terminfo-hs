@@ -1,0 +1,44 @@
+name:                terminfo-hs
+version:             0.1.0.0
+synopsis:            A pure-Haskell (no FFI) module for accessing terminfo databases
+description:         This module accesses terminfo databases, which contain
+                     characteristics, or capabilities, for the various
+                     terminals such as screen, vt100, or xterm. Among other
+                     things, the capabilities include the idiosyncratic
+                     character sequences needed to send commands to the
+                     terminal. These commands include things like cursor
+                     movement.
+
+                     For a deeper understanding of terminfo, consult the
+                     man pages for term(5) and terminfo(5).
+
+                     This package is dead simple, and doesn't do anything
+                     fancy with the capabilities themselves; it merely
+                     provides a means for accessing them.
+
+homepage:            https://github.com/chreekat/terminfo-hs
+license:             BSD3
+license-file:        LICENSE
+author:              Bryan Richter
+maintainer:          bryan.richter@gmail.com
+copyright:           Bryan Richter, 2013
+category:            System
+build-type:          Simple
+cabal-version:       >=1.8
+
+library
+  exposed-modules:     Terminal.Terminfo
+  other-modules:       Terminal.Terminfo.DirTreeDB,
+                       Terminal.Terminfo.Types, Terminal.Terminfo.TH,
+                       Terminal.Terminfo.Internal
+  build-depends:       base ==4.*, placeholders, errors ==1.*,
+                       bytestring ==0.*, directory ==1.*,
+                       filepath ==1.*, attoparsec ==0.*,
+                       template-haskell ==2.*
+  ghc-options:         -O0
+
+test-suite Terminal.Terminfo.Internal
+  type:                exitcode-stdio-1.0
+  main-is:             test.hs
+  build-depends:       base ==4.*, filepath ==1.*, directory ==1.*,
+                       errors ==1.*, QuickCheck
