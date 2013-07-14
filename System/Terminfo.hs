@@ -30,7 +30,7 @@
 -- uglyExample = do
 --     term \<- fromJust \<$> lookupEnv \"TERM\"
 --     db \<- 'acquireDatabase' term
---     let maxColors (Right d) = 'queryNumTermCap' d C.'System.Terminfo.Caps.MaxColors'
+--     let maxColors (Right d) = 'queryNumTermCap' d C.'MaxColors'
 --     return $ maxColors db
 -- @
 --

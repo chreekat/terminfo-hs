@@ -15,15 +15,33 @@
 -- to make one definition the golden standard, and generate the others
 -- through reification, but ...
 
-module System.Terminfo.TH
-    ( mkCapValues
+module System.Terminfo.TH (
+    -- * Type Declarations
+      mkCapValues
     , mkTermCaps
+    -- * Setters
+
+    -- | A list of record updates lambdas, e.g.
+    --
+    -- > [ \val obj -> obj { tc_autoLeftMargin = val }, ... ]
     , mkBoolSetters
     , mkNumSetters
     , mkStrSetters
+    -- * \'Mempty\'
+
+    -- | Wait, I should actually make these Monoids!
+    --
+    -- > BoolCapValues False False False ...
     , mkBoolCapsMempty
     , mkNumCapsMempty
     , mkStrCapsMempty
+    -- * Getters
+
+    -- |
+    -- > (\x -> case x of
+    -- >     AutoLeftMargin -> autoLeftMargin
+    -- >     ...
+    -- >     ) :: BoolTermCap -> BoolCapValues -> Bool
     , mkBoolGetter
     , mkNumGetter
     , mkStrGetter
@@ -45,8 +63,6 @@ numberList = unsafePerformIO $ lines <$> readFile "numberTermCaps"
 stringList = unsafePerformIO $ lines <$> readFile "stringTermCaps"
 
 {-|
-This splice generates the data definitions
-
 @
 data BoolCapValues = BoolCapValues { tc_autoLeftMargin :: Bool, ... }
     deriving (Show)
@@ -57,8 +73,6 @@ data NumCapValues = NumCapValues { tc_columns :: Maybe Int, ... }
 data StrCapValues = NumCapValues { tc_backTab :: Maybe String, ... }
     deriving (Show)
 @
-
-which are used internally, as part of 'TIDatabase'
 -}
 
 mkCapValues = reportWarning msg >> sequence
@@ -79,8 +93,6 @@ mkCaps name typ flags =
         (\t -> return (mkName ("tc_"++flag), NotStrict, t))
 
 {- |
-This splice generates the data definitions
-
 @
 data BoolTermCap = AutoLeftMargin | ...
 
@@ -88,8 +100,6 @@ data NumTermCap = Columns | ...
 
 data StrTermCap = BackTab | ...
 @
-
-which are part of the public API.
 -}
 
 mkTermCaps = sequence
@@ -106,15 +116,6 @@ mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
 -- Used below too
 upCase (c:cs) = toUpper c : cs
 upCase []     = []
-
-{- |
-This splice generates the expression
-
-> [ \val obj -> obj { $(name) = val }, ... ]
-
-which is used in parsing the numbers section of terminfo files.
--}
-
 
 mkBoolSetters = reportWarning msg >> mkSetters boolList
   where
@@ -138,18 +139,6 @@ mkSetter cap = do
         upd = RecUpdE (VarE obj) [fieldPair]
     return $ LamE [VarP val, VarP obj] upd
 
-{- |
-This splice generates the expression
-
-> $(name) $(mempt) $(mempt) ...
-
-e.g.
-
-> BoolCapValues False False False ...
-
-also used for parsing the bool section
--}
-
 mkBoolCapsMempty = mkMempty "BoolCapValues" [|False|] boolList
 mkNumCapsMempty = mkMempty "NumCapValues" [|Nothing|] numberList
 mkStrCapsMempty = mkMempty "StrCapValues" [|Nothing|] stringList
@@ -168,22 +157,6 @@ mkMempty name mempt =
   where
     applyToMempt = flip appE mempt
 
--- |
--- This splice generates the expression
---
--- > (\x -> case x of
--- >     $(dcon1) -> $(getter1)
--- >     $(dcon2) -> $(getter2)
--- >     ...
--- >     ) :: $(type)TermCap) -> $(type)CapValues -> $(valueType)
---
--- E.g.
---
--- > (\x -> case x of
--- >     AutoLeftMargin -> autoLeftMargin
--- >     ...
--- >     ) :: BoolTermCap -> BoolCapValues -> Bool
---
 mkBoolGetter = mkGetter boolList
 mkNumGetter = mkGetter numberList
 mkStrGetter = mkGetter stringList
