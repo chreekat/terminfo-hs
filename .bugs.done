@@ -2,6 +2,7 @@ Lint everything | id:0017ea74471a493ca44bb11eecd2d6136aa579f1
 Write a better doc intro | id:1610cd596f069b045a41de011a0e48d273cb5ecf
 rename Terminal.Terminfo | id:1fb21c023a4bbac1f0885d78707592e01d63b35d
 Back to implicit prelude | id:29ba660db9c1024d53b0944f10bd68242fd15689
+Remove Placeholders | id:3f024e7e5c9f470e88db17ee75c45ec057df6cdb
 Warn about compilation times | id:4b2ba2e1b26f61b65786fb73901706701bbc0428
 Cabalify the package | id:b321cb67233aa40396a89d4924a7a82b407ff878
 Refomat to tw=75 | id:b5759cb86a4fab74745b487a2ae4103d56243d92

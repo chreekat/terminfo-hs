@@ -29,8 +29,6 @@ module Terminal.Terminfo.TH
     , mkStrGetter
     ) where
 
-import Development.Placeholders
-
 import Control.Applicative ((<$>))
 import Data.Char (toUpper)
 import Data.List (foldl')

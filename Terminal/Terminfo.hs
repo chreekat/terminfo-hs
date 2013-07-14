@@ -57,8 +57,6 @@ module Terminal.Terminfo (
     )
 where
 
-import Development.Placeholders
-
 import Control.Applicative ((<$>), (<|>), (<*>), pure)
 import Control.Error
 import Control.Monad ((<=<), filterM)

@@ -37,7 +37,7 @@ library
   other-modules:       Terminal.Terminfo.DirTreeDB,
                        Terminal.Terminfo.Types, Terminal.Terminfo.TH,
                        Terminal.Terminfo.Internal
-  build-depends:       base ==4.*, placeholders, errors ==1.*,
+  build-depends:       base ==4.*, errors ==1.*,
                        bytestring ==0.*, directory ==1.*,
                        filepath ==1.*, attoparsec ==0.*,
                        template-haskell ==2.*

@@ -15,8 +15,6 @@ module Terminal.Terminfo.DirTreeDB
     ( parseDirTreeDB
     ) where
 
-import Development.Placeholders
-
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when, void)
 import Data.Attoparsec as A
