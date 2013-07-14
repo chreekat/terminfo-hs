@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      :  Terminfo
+-- Module      :  Terminal.Terminfo
 -- Copyright   :  (c) Bryan Richter (2013)
 -- License     :  BSD-style
 -- Maintainer  :  bryan.richter@gmail.com
@@ -33,7 +33,7 @@
 -- Just 256
 --
 
-module Terminfo (
+module Terminal.Terminfo (
     -- * Acquiring a Database
       acquireDatabase
     , TIDatabase
@@ -65,10 +65,10 @@ import System.Directory
 import System.FilePath
 import System.IO
 
-import Terminfo.Types
-import Terminfo.DirTreeDB
-import Terminfo.TH
-import Terminfo.Internal (terminfoDBLocs)
+import Terminal.Terminfo.Types
+import Terminal.Terminfo.DirTreeDB
+import Terminal.Terminfo.TH
+import Terminal.Terminfo.Internal (terminfoDBLocs)
 
 data DBType = BerkeleyDB | DirTreeDB
     deriving(Show)

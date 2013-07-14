@@ -1,4 +1,4 @@
-module Terminfo.Internal where
+module Terminal.Terminfo.Internal where
 
 import Control.Applicative ((<$>), (<|>), (<*>), pure)
 import Control.Error

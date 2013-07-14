@@ -15,7 +15,7 @@
 -- choose to make one definition the golden standard, and generate the
 -- others through reification, but ...
 
-module Terminfo.TH
+module Terminal.Terminfo.TH
     ( mkCapValues
     , mkTermCaps
     , mkBoolSetters

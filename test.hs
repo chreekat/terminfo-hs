@@ -2,7 +2,7 @@
 
 import Test.QuickCheck
 import Test.QuickCheck.All
-import Terminfo.Internal
+import Terminal.Terminfo.Internal
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad (join)
