@@ -4,10 +4,7 @@ import Test.QuickCheck
 import Test.QuickCheck.All
 import Terminal.Terminfo.Internal
 
-import Control.Applicative ((<$>), (<*>))
-import Control.Monad (join)
 import Data.Maybe
-import Data.List
 
 prop_useOverride ovr =
     forAll notLikely $ \usr ->

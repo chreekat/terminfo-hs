@@ -1,10 +1,7 @@
 module Terminal.Terminfo.Internal where
 
-import Control.Applicative ((<$>), (<|>), (<*>), pure)
+import Control.Applicative ((<$>), (<*>), pure)
 import Control.Error
-import Control.Monad
-import Data.Maybe
-import System.Directory
 import System.Environment (lookupEnv)
 import System.FilePath
 
