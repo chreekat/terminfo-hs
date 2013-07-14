@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      :  Terminal.Terminfo
+-- Module      :  System.Terminfo
 -- Copyright   :  (c) Bryan Richter (2013)
 -- License     :  BSD-style
 -- Maintainer  :  bryan.richter@gmail.com
@@ -36,7 +36,7 @@
 -- Just 256
 --
 
-module Terminal.Terminfo (
+module System.Terminfo (
     -- * Acquiring a Database
       acquireDatabase
     , TIDatabase
@@ -66,10 +66,10 @@ import System.Directory
 import System.FilePath
 import System.IO
 
-import Terminal.Terminfo.Types
-import Terminal.Terminfo.DirTreeDB
-import Terminal.Terminfo.TH
-import Terminal.Terminfo.Internal (terminfoDBLocs)
+import System.Terminfo.Types
+import System.Terminfo.DirTreeDB
+import System.Terminfo.TH
+import System.Terminfo.Internal (terminfoDBLocs)
 
 data DBType = BerkeleyDB | DirTreeDB
     deriving(Show)
@@ -80,7 +80,7 @@ mkTermCaps
 type EIO = EitherT String IO
 
 acquireDatabase
-    :: String -- ^ Terminal name
+    :: String -- ^ System name
     -> IO (Either String TIDatabase)
        -- ^ A database object for the terminal, if it exists.
 acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)

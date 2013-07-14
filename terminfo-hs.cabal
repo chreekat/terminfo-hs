@@ -33,10 +33,10 @@ source-repository head
   location: https://github.com/chreekat/terminfo-hs
 
 library
-  exposed-modules:     Terminal.Terminfo
-  other-modules:       Terminal.Terminfo.DirTreeDB,
-                       Terminal.Terminfo.Types, Terminal.Terminfo.TH,
-                       Terminal.Terminfo.Internal
+  exposed-modules:     System.Terminfo
+  other-modules:       System.Terminfo.DirTreeDB,
+                       System.Terminfo.Types, System.Terminfo.TH,
+                       System.Terminfo.Internal
   build-depends:       base ==4.*, errors ==1.*,
                        bytestring ==0.*, directory ==1.*,
                        filepath ==1.*, attoparsec ==0.*,
@@ -45,7 +45,7 @@ library
   -- hundreds of records.
   ghc-options:         -O0
 
-test-suite Terminal.Terminfo.Internal
+test-suite System.Terminfo.Internal
   type:                exitcode-stdio-1.0
   main-is:             test.hs
   build-depends:       base ==4.*, filepath ==1.*, directory ==1.*,

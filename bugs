@@ -1,3 +1,5 @@
 Try using reification in the TH | id:0f066dfb7447ab41f34ffabcbbe7401b64cb25eb
+Make a canonical doc source | id:2c986f55a3167ba533598b0f8efecc7588dd2162
 Put Capabilities in their own module | id:2f8f638a65f46c43bc980526400469d4fbee2b01
-Rename Terminal to System. Stupid I know. | id:812f9f92101be3bdda52d935c74c7008b6804d8e
+readme for github | id:50470c2c11bc610e16b3156b035a6d98b004e5c7
+mkdir src, capabilities | id:53cc4f0f505b54a0daf476f3b4ecb178ad718654

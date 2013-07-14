@@ -2,7 +2,7 @@
 
 import Test.QuickCheck
 import Test.QuickCheck.All
-import Terminal.Terminfo.Internal
+import System.Terminfo.Internal
 
 import Data.Maybe
 

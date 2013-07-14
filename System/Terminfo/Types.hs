@@ -1,13 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Terminal.Terminfo.Types
+module System.Terminfo.Types
     ( TIDatabase(..)
     , BoolCapValues(..)
     , NumCapValues(..)
     , StrCapValues(..)
     ) where
 
-import Terminal.Terminfo.TH
+import System.Terminfo.TH
 
 mkCapValues
 
