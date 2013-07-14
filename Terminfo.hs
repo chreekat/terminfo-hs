@@ -1,17 +1,37 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 -- |
 -- Module      :  Terminfo
 -- Copyright   :  (c) Bryan Richter (2013)
 -- License     :  BSD-style
--- 
 -- Maintainer  :  bryan.richter@gmail.com
--- Portability :  portable
 --
--- A pure-Haskell (no FFI) module for interacting with terminfo
--- databases.
+-- This is a pure-Haskell (no FFI) module for interacting with terminfo
+-- databases. These databases contain characteristics, or capabilities, for
+-- terminal types such as screen, vt100, or xterm. These capabilities
+-- include the idiosyncratic character sequences needed to send commands to
+-- the terminal. For a deeper understanding of terminfo, consult the man
+-- pages for term(5) and terminfo(5).
+--
+-- There are three parts to this module: acquiring a terminfo database,
+-- querying the database, and defining the capabilities.
+--
+-- This module is dead simple, so a single example will hopefully suffice
+-- to demonstrate its usage.
+--
+-- @
+--  uglyExample :: IO (Maybe Int)
+--  uglyExample = do
+--      term \<- fromJust \<$> lookupEnv \"TERM\"
+--      db \<- 'acquireDatabase' term
+--      let maxColors (Right d) = 'queryNumTermCap' d 'TCN_MaxColors'
+--      return $ maxColors db
+-- @
+--
+-- >>> uglyExample
+-- Just 256
+--
 
 module Terminfo (
     -- * Acquiring a Database
@@ -22,17 +42,17 @@ module Terminfo (
     , queryBoolTermCap
     , queryNumTermCap
     , queryStrTermCap
-    -- ** The Capabilities
+    -- * The Capabilities
+    -- $capabilities
+
+    -- ** Boolean
     , BoolTermCap(..)
+    -- ** Numeric
     , NumTermCap(..)
+    -- ** String
     , StrTermCap(..)
-    -- * Rationale
-    -- ** TIDatabase
-    -- $rationaleTID
     )
 where
-
-import Prelude hiding (lines)
 
 import Development.Placeholders
 
@@ -111,7 +131,7 @@ queryNumTermCap :: TIDatabase
                 -> Maybe Int
 queryNumTermCap (TIDatabase _ vals _) cap = ($mkNumGetter cap) vals
 
--- | As this is a dead simple module, no 'smart' handling of the
+-- | As this is a dead simple module, no \'smart\' handling of the
 -- returned string is implemented. In particular, placeholders for
 -- buffer characters and command arguments are left as-is. This will be
 -- rectified eventually, probably in a separate module.
@@ -120,23 +140,48 @@ queryStrTermCap :: TIDatabase
                 -> Maybe String
 queryStrTermCap (TIDatabase _ _ vals) cap = ($mkStrGetter cap) vals
 
+
+
+
 -- $queryFuncs
 --
 -- For each of these three actions, the first argument is the database
 -- to query, and the second argument is the capability to look up.
 --
--- I'm not super proud of this interface, but it's the best I can manage
--- at present without requiring the user to use lots of mostly-empty
--- case expressions. Perhaps someone will suggest a more interesting
--- solution.
+-- I'm not super proud of this interface, but it's the best I can manage at
+-- present without requiring lots of mostly-empty case expressions. Perhaps
+-- someone will suggest a more interesting solution.
 
--- $rationaleTID
+-- $capabilities
 --
--- One could imagine a simpler interface that hides the TIDatabase type
--- entirely. This could be done naively by rolling 'acquireDatabase'
--- into the query actions, or more \'intelligently\' by creating some
--- 'State'-based monad instance. But the first would read the db file on
--- every query, which strikes me as entirely /too/ naive, and the second
--- would force the user to add Yet Another Monad to their application's
--- stack. Unless somebody has a better idea, I think that exposing
--- TIDatabase strikes the best balance.
+-- There are no less than 497 capabilities specified in term.h on my
+-- Intel-based Ubuntu 12.04 notebook (slightly fewer in the terminfo(5)
+-- man page). The naive way of making these available to the user is as
+-- data constructors, and that is what I have done here. There are
+-- significant drawbacks to this scheme, however.
+--
+-- The number of constructors absolutely crushes the namespace. I've
+-- tried to make this a little nicer by adding the 'TCc_' prefix to each
+-- name, but that is a questionable solution. ('c' is one of B, N, or S,
+-- representing Bool, Num, and String respectively.)
+--
+-- Distressingly, GHC 7.6.3 eats up gobs of memory when compiling the
+-- module that defines these constructors:
+--
+-- @
+-- <<ghc: 4726807828 bytes, 9003 GCs, 50165760\/140188620 avg\/max bytes
+-- residency (17 samples), 400M in use, 0.00 INIT (0.00 elapsed), 20.43 MUT
+-- (25.41 elapsed), 27.01 GC (27.71 elapsed) :ghc>>
+-- @
+--
+-- Frankly, this seems a bit buggy, but I haven't looked into it yet. In
+-- the meanwhile, it makes compilation very slow!  Especially painful when
+-- proofing Haddocks...
+--
+-- Finally, in order to stay DRY, I'm generating a large number of
+-- expressions and data definitions with Template Haskell. I don't find
+-- anything wrong with that solution, given the circumstances, but it does
+-- make me question the circumstances.
+--
+-- Here follows the list of capabilities. For descriptions of these,
+-- consult terminfo(5).
