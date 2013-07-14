@@ -24,21 +24,21 @@ infixr 4 <$$/>
 
 -- | I hate this name. There is undoubtedly a better way of structuring all
 -- of this, starting way up at 'dirTreeDB'.
-locationsPure :: (Maybe FilePath) -- ^ Override directory
-              -> (Maybe FilePath) -- ^ $HOME
-              -> (Maybe String)   -- ^ $TERMINFO_DIRS
-              -> [FilePath]       -- ^ Defaults
+locationsPure :: Maybe FilePath -- ^ Override directory
+              -> Maybe FilePath -- ^ $HOME
+              -> Maybe String   -- ^ $TERMINFO_DIRS
+              -> [FilePath]     -- ^ Defaults
               -> [FilePath]
 locationsPure ovr usr termdirs defs = case ovr of
     Just override -> [override]
-    Nothing       -> (catMaybes [usr]) ++ system
+    Nothing       -> catMaybes [usr] ++ system
 
   where
     system = case termdirs of
         Just list -> parseTDVar defs list
         Nothing   -> defs
 
-parseTDVar defs = (replace "" defs) . (split ':')
+parseTDVar defs = replace "" defs . split ':'
 
 -- | Replace an element with multiple replacements
 replace :: Eq a => a -> [a] -> [a] -> [a]

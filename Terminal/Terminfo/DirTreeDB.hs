@@ -35,7 +35,7 @@ type ShortInt = Word16
 
 -- | short ints are stored little-endian.
 shortInt :: Integral a => ShortInt -> Parser a
-shortInt i = word8 first >> word8 second >> (return $ fromIntegral i)
+shortInt i = word8 first >> word8 second >> return (fromIntegral i)
   where
     (second', first') = i `divMod` 256
     second = fromIntegral second'
@@ -77,9 +77,7 @@ boolCaps sz = do
     let setters = zipWith fixVal bytes $mkBoolSetters
     return $ foldl' (flip ($)) ($mkBoolCapsMempty) setters
   where
-    fixVal b f = if b == 1
-                    then f True
-                    else f False
+    fixVal b f = f $ b == 1
 
 numCaps :: Int -> Parser NumCapValues
 numCaps cnt = do

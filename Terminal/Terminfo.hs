@@ -117,19 +117,19 @@ extractDirTreeDB :: FilePath
 extractDirTreeDB =
     hoistEither . parseDirTreeDB
     <=< rightT . B.hGetContents
-    <=< rightT . (flip openBinaryFile ReadMode)
+    <=< rightT . flip openBinaryFile ReadMode
   where
-    rightT = EitherT . (fmap Right)
+    rightT = EitherT . fmap Right
 
 queryBoolTermCap :: TIDatabase
                  -> BoolTermCap
                  -> Bool
-queryBoolTermCap (TIDatabase vals _ _) cap = ($mkBoolGetter cap) vals
+queryBoolTermCap (TIDatabase vals _ _) cap = $mkBoolGetter cap vals
 
 queryNumTermCap :: TIDatabase
                 -> NumTermCap
                 -> Maybe Int
-queryNumTermCap (TIDatabase _ vals _) cap = ($mkNumGetter cap) vals
+queryNumTermCap (TIDatabase _ vals _) cap = $mkNumGetter cap vals
 
 -- | As this is a dead simple module, no \'smart\' handling of the
 -- returned string is implemented. In particular, placeholders for
@@ -138,7 +138,7 @@ queryNumTermCap (TIDatabase _ vals _) cap = ($mkNumGetter cap) vals
 queryStrTermCap :: TIDatabase
                 -> StrTermCap
                 -> Maybe String
-queryStrTermCap (TIDatabase _ _ vals) cap = ($mkStrGetter cap) vals
+queryStrTermCap (TIDatabase _ _ vals) cap = $mkStrGetter cap vals
 
 
 
