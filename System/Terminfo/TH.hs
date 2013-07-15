@@ -108,7 +108,7 @@ mkTermCaps = sequence
     , mkTermCap "StrTermCap" stringList
     ]
 
-mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors []
+mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors [mkName "Ord", mkName "Eq"]
   where
     ctors = map ctor ls
     ctor l = normalC (mkName $ upCase l) []

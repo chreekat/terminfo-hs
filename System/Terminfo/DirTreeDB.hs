@@ -24,6 +24,7 @@ import qualified Data.ByteString as B
 import Data.Char (chr)
 import Data.List (foldl')
 import Data.Maybe (catMaybes)
+import Data.Monoid (mconcat)
 import Data.Word (Word16)
 
 import System.Terminfo.Types
@@ -68,9 +69,9 @@ tiDatabase = do
     nums <- numCaps numIntegers
     strs <- stringCaps numOffsets stringSize
     -- TODO: extended info
-    return $ TIDatabase bools nums strs
+    return $ mconcat [bools, nums, strs]
 
-boolCaps :: Int -> Parser BoolCapValues
+boolCaps :: Int -> Parser TIDatabase
 boolCaps sz = do
     bytes <- B.unpack <$> A.take sz
     let setters = zipWith fixVal bytes $mkBoolSetters
@@ -78,13 +79,13 @@ boolCaps sz = do
   where
     fixVal b f = f $ b == 1
 
-numCaps :: Int -> Parser NumCapValues
+numCaps :: Int -> Parser TIDatabase
 numCaps cnt = do
     ints <- map maybePositive <$> A.count cnt anyShortInt
     let setters = zipWith ($) $mkNumSetters ints
     return $ foldl' (flip ($)) ($mkNumCapsMempty) setters
 
-stringCaps :: Int -> Int -> Parser StrCapValues
+stringCaps :: Int -> Int -> Parser TIDatabase
 stringCaps numOffsets stringSize = do
     offs <- map maybePositive <$> A.count numOffsets anyShortInt
     stringTable <- A.take stringSize
