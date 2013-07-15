@@ -25,9 +25,6 @@ category:            System
 build-type:          Simple
 cabal-version:       >=1.8
 
--- The canonical lists of capabilities
-extra-source-files:  stringTermCaps, boolTermCaps, numberTermCaps
-
 source-repository head
   type: git
   location: https://github.com/chreekat/terminfo-hs
@@ -35,15 +32,12 @@ source-repository head
 library
   exposed-modules:     System.Terminfo
   other-modules:       System.Terminfo.DirTreeDB,
-                       System.Terminfo.Types, System.Terminfo.TH,
+                       System.Terminfo.Types
                        System.Terminfo.Internal
   build-depends:       base ==4.*, errors ==1.*,
                        bytestring ==0.*, directory ==1.*,
                        filepath ==1.*, attoparsec ==0.*,
-                       template-haskell ==2.*
-  -- With -O2, compilation time goes through the roof with datatypes with
-  -- hundreds of records.
-  ghc-options:         -O0
+                       containers ==0.5.*
 
 test-suite System.Terminfo.Internal
   type:                exitcode-stdio-1.0

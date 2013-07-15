@@ -1,6 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 -- |
 -- Module      :  System.Terminfo
 -- Copyright   :  (c) Bryan Richter (2013)

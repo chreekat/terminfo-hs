@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module System.Terminfo.Types
     ( TIDatabase(..)
     , TCBMap(..)
