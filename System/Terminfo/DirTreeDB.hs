@@ -25,7 +25,6 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.Char (chr)
 import qualified Data.Map.Lazy as M
-import Data.Monoid (mconcat)
 import Data.Word (Word16)
 
 import System.Terminfo.Types

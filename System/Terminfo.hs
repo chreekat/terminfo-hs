@@ -54,11 +54,10 @@ module System.Terminfo (
 
     ) where
 
-import Control.Applicative ((<$>), (<|>), (<*>), pure)
+import Control.Applicative ((<$>), (<|>))
 import Control.Error
 import Control.Monad ((<=<), filterM)
 import qualified Data.ByteString as B
-import Data.ByteString (ByteString)
 import qualified Data.Map.Lazy as M
 import System.Directory
 import System.FilePath
@@ -66,7 +65,6 @@ import System.IO
 
 import System.Terminfo.Types
 import System.Terminfo.DirTreeDB
-import System.Terminfo.TH
 import System.Terminfo.Internal (terminfoDBLocs)
 import System.Terminfo.Caps
 
@@ -88,8 +86,7 @@ findDBFile term = case term of
     _     -> hoistEither $ Left "User specified null terminal name"
   where
     orLeft = flip noteT
-
-dbFileM c term = dirTreeDB c term <|> berkeleyDB
+    dbFileM c term = dirTreeDB c term <|> berkeleyDB
 
 -- | Not implemented
 berkeleyDB = nothing
