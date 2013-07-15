@@ -1,24 +1,22 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module System.Terminfo.Types
-    ( TIDatabase
-    , TIDBKey(..)
-    , TIDBVal(..)
+    ( TIDatabase(..)
+    , TCBMap(..)
+    , TCNMap(..)
+    , TCSMap(..)
     ) where
 
 import Data.Map.Lazy (Map)
-import qualified Data.Map.Lazy as M
 
 import System.Terminfo.Caps
 
-data TIDBKey = BoolKey BoolTermCap
-             | NumKey NumTermCap
-             | StrKey StrTermCap
-             deriving (Eq, Ord, Show)
+data TCBMap = TCBMap (Map BoolTermCap Bool)
+    deriving (Show)
+data TCNMap = TCNMap (Map NumTermCap Int)
+    deriving (Show)
+data TCSMap = TCSMap (Map StrTermCap String)
+    deriving (Show)
 
-data TIDBVal = BoolVal Bool
-             | NumVal Int
-             | StrVal String
-             deriving (Show)
-
-type TIDatabase = Map TIDBKey TIDBVal
+data TIDatabase = TIDatabase TCBMap TCNMap TCSMap
+    deriving (Show)

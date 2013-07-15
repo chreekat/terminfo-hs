@@ -17,8 +17,7 @@
 
 module System.Terminfo.TH (
     -- * Type Declarations
-      mkCapValues
-    , mkTermCaps
+    mkTermCaps
     -- * Getters
 
     -- |
@@ -33,8 +32,6 @@ module System.Terminfo.TH (
 
 import Control.Applicative ((<$>))
 import Data.Char (toUpper)
-import Data.List (foldl')
-import Data.Maybe (fromJust)
 import Language.Haskell.TH
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -45,36 +42,6 @@ import System.IO.Unsafe (unsafePerformIO)
 boolList = unsafePerformIO $ lines <$> readFile "boolTermCaps"
 numberList = unsafePerformIO $ lines <$> readFile "numberTermCaps"
 stringList = unsafePerformIO $ lines <$> readFile "stringTermCaps"
-
-{-|
-@
-data BoolCapValues = BoolCapValues { tc_autoLeftMargin :: Bool, ... }
-    deriving (Show)
-
-data NumCapValues = NumCapValues { tc_columns :: Maybe Int, ... }
-    deriving (Show)
-
-data StrCapValues = NumCapValues { tc_backTab :: Maybe String, ... }
-    deriving (Show)
-@
--}
-
-mkCapValues = reportWarning msg >> sequence
-    [ mkCaps (mkName "BoolCapValues") [t|Bool|] boolList
-    , mkCaps (mkName "NumCapValues") [t|Maybe Int|] numberList
-    , mkCaps (mkName "StrCapValues") [t|Maybe String|] stringList
-    ]
-  where
-    msg = "This module contains a datatype with hundreds of records. In the author's\n"
-        ++ "    experience, compilation will take an inordinate amount of time."
-
-mkCaps name typ flags =
-    dataD (cxt []) name [] [dCon name typ flags] [mkName "Show"]
-  where
-    dCon name typ = recC name . map (mkTypRec typ)
-
-    mkTypRec typ flag = typ >>=
-        (\t -> return (mkName ("tc_"++flag), NotStrict, t))
 
 {- |
 @

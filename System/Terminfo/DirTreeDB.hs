@@ -16,23 +16,19 @@ module System.Terminfo.DirTreeDB
     ( parseDirTreeDB
     ) where
 
-import Development.Placeholders
-
 import Control.Applicative ((<$>), (<*>))
-import Control.Arrow ((***), second)
+import Control.Arrow ((***))
+import qualified Control.Arrow as Arr
 import Control.Monad ((<=<), when, void)
 import Data.Attoparsec as A
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.Char (chr)
-import Data.List (foldl')
 import qualified Data.Map.Lazy as M
-import Data.Maybe (catMaybes)
 import Data.Monoid (mconcat)
 import Data.Word (Word16)
 
 import System.Terminfo.Types
-import System.Terminfo.TH
 
 -- | term(5) defines a short integer as two 8-bit bytes, so:
 type ShortInt = Word16
@@ -41,9 +37,7 @@ type ShortInt = Word16
 shortInt :: Integral a => ShortInt -> Parser a
 shortInt i = word8 first >> word8 second >> return (fromIntegral i)
   where
-    (second', first') = i `divMod` 256
-    second = fromIntegral second'
-    first = fromIntegral first'
+    (second, first) = (fromIntegral *** fromIntegral) $ i `divMod` 256
 
 -- | short ints are stored little-endian.
 --
@@ -71,49 +65,47 @@ tiDatabase = do
     -- Align on an even byte
     when (odd boolSize) (void $ A.take 1)
     nums <- numCaps numIntegers
-    {-strs <- stringCaps numOffsets stringSize-}
+    strs <- stringCaps numOffsets stringSize
     -- TODO: extended info
-    return $ mconcat [bools, nums{-, strs-}]
+    return $ TIDatabase bools nums strs
 
-boolCaps :: Int -> Parser TIDatabase
+boolCaps :: Int -- ^ Number of caps
+         -> Parser TCBMap
 boolCaps =
-    return . M.fromList . wrap . zip keys . map (== 1) . B.unpack
+    return . TCBMap . M.fromList . zip keys . map (== 1) . B.unpack
         <=< A.take
   where
-    wrap = map (BoolKey *** BoolVal)
     {-keys :: [BoolTermCap]-}
     keys = [minBound ..]
 
 -- Negative values indicate missing capability.
-numCaps :: Int -> Parser TIDatabase
-numCaps = return . M.fromList . wrap . filter notNeg . zip keys
+numCaps :: Int -- ^ Number of caps
+        -> Parser TCNMap
+numCaps = return . TCNMap . M.fromList . filter notNeg . zip keys
     <=< flip A.count anyShortInt
   where
     notNeg = ((/= -1) . snd)
-    wrap = map (NumKey *** NumVal)
     {-keys :: [BoolTermCap]-}
     keys = [minBound ..]
 
-stringCaps :: Int -> Int -> Parser TIDatabase
-stringCaps numOffsets stringSize = $notImplemented -- do
-    {-offs <- map maybePositive <$> A.count numOffsets anyShortInt-}
-    {-stringTable <- A.take stringSize-}
-    {-let values = map (parseStringMay stringTable) offs-}
-        {-setters = zipWith ($) $mkStrSetters values-}
-    {-return $ foldl' (flip ($)) ($mkStrCapsMempty) setters-}
-  {-where-}
-    {-parseStringMay :: ByteString -> Maybe Int -> Maybe String-}
-    {-parseStringMay = fmap . flip parseString-}
-
-    {-parseString :: Int -> ByteString -> String-}
-    {-parseString offset = asString . B.takeWhile (/= 0) . B.drop offset-}
-      {-where-}
-        {-asString = map (chr . fromIntegral) . B.unpack-}
-
-maybePositive :: Int -> Maybe Int
-maybePositive i = if i /= (-1)
-                    then Just i
-                    else Nothing
+stringCaps :: Int -- ^ Number of caps
+           -> Int -- ^ Size of table
+           -> Parser TCSMap
+stringCaps numOffsets stringSize = do
+    offs <- A.count numOffsets anyShortInt
+    stringTable <- A.take stringSize
+    return
+        $ TCSMap $ M.fromList $ map (parseValue stringTable)
+        $ filter notNeg $ zip keys offs
+  where
+    notNeg = ((/= -1) . snd)
+    keys = [minBound ..]
+    parseValue tbl = Arr.second $ parseString tbl
+    parseString table offset =
+        asString
+        $ B.takeWhile (/= 0)  -- null-terminated
+        $ B.drop offset table -- starts at offset
+    asString = map (chr . fromIntegral) . B.unpack
 
 -- | the magic number for term files
 magic :: Parser Int
