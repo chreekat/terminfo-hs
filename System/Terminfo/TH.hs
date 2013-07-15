@@ -19,22 +19,6 @@ module System.Terminfo.TH (
     -- * Type Declarations
       mkCapValues
     , mkTermCaps
-    -- * Setters
-
-    -- | A list of record updates lambdas, e.g.
-    --
-    -- > [ \val obj -> obj { tc_autoLeftMargin = val }, ... ]
-    , mkBoolSetters
-    , mkNumSetters
-    , mkStrSetters
-    -- * \'Mempty\'
-
-    -- | Wait, I should actually make these Monoids!
-    --
-    -- > BoolCapValues False False False ...
-    , mkBoolCapsMempty
-    , mkNumCapsMempty
-    , mkStrCapsMempty
     -- * Getters
 
     -- |
@@ -117,46 +101,6 @@ mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors derivings
 -- Used below too
 upCase (c:cs) = toUpper c : cs
 upCase []     = []
-
-mkBoolSetters = reportWarning msg >> mkSetters boolList
-  where
-    msg =      "This module makes use of a datatype with hundreds\n"
-        ++ "    of records. In the author's experience, compilation\n"
-        ++ "    will take an inordinate amount of time."
-mkNumSetters = mkSetters numberList
-mkStrSetters = mkSetters stringList
-
-mkSetters ::[String] -> ExpQ
-mkSetters = listE . map mkSetter
-
--- TODO: lens cleanup candidate
-mkSetter cap = do
-    -- Sadly, I can't seem to use splicing inside a quasiquoted rec
-    -- update. Syntax error.
-    obj <- newName "obj"
-    val <- newName "val"
-    let fName = mkName $ "tc_" ++ cap
-        fieldPair = (fName, VarE val)
-        upd = RecUpdE (VarE obj) [fieldPair]
-    return $ LamE [VarP val, VarP obj] upd
-
-mkBoolCapsMempty = mkMempty "BoolCapValues" [|False|] boolList
-mkNumCapsMempty = mkMempty "NumCapValues" [|Nothing|] numberList
-mkStrCapsMempty = mkMempty "StrCapValues" [|Nothing|] stringList
-
--- At each point in the list, we apply the accumulator (which is a
--- partially-applied data constructor) to the new element. At the end, we
--- should have a fully-applied (kind *) value of type name!
---
--- Note that the contents of the list are immaterial - hence the use of
--- const.
-mkMempty :: String -> ExpQ -> [String] -> ExpQ
-mkMempty name mempt =
-  foldl' (const . applyToMempt)
-    (conE =<< fromJust <$> lookupValueName name)
-
-  where
-    applyToMempt = flip appE mempt
 
 mkBoolGetter = mkGetter boolList
 mkNumGetter = mkGetter numberList
