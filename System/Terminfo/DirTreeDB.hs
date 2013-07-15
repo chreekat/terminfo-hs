@@ -70,10 +70,10 @@ tiDatabase = do
     bools <- boolCaps boolSize
     -- Align on an even byte
     when (odd boolSize) (void $ A.take 1)
-    {-nums <- numCaps numIntegers-}
+    nums <- numCaps numIntegers
     {-strs <- stringCaps numOffsets stringSize-}
     -- TODO: extended info
-    return $ bools -- mconcat [bools, nums, strs]
+    return $ mconcat [bools, nums{-, strs-}]
 
 boolCaps :: Int -> Parser TIDatabase
 boolCaps =
@@ -84,12 +84,15 @@ boolCaps =
     {-keys :: [BoolTermCap]-}
     keys = [minBound ..]
 
-
+-- Negative values indicate missing capability.
 numCaps :: Int -> Parser TIDatabase
-numCaps cnt = $notImplemented -- do
-    {-ints <- map maybePositive <$> A.count cnt anyShortInt-}
-    {-let setters = zipWith ($) $mkNumSetters ints-}
-    {-return $ foldl' (flip ($)) ($mkNumCapsMempty) setters-}
+numCaps = return . M.fromList . wrap . filter notNeg . zip keys
+    <=< flip A.count anyShortInt
+  where
+    notNeg = ((/= -1) . snd)
+    wrap = map (NumKey *** NumVal)
+    {-keys :: [BoolTermCap]-}
+    keys = [minBound ..]
 
 stringCaps :: Int -> Int -> Parser TIDatabase
 stringCaps numOffsets stringSize = $notImplemented -- do
