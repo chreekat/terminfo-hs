@@ -59,6 +59,7 @@ import Control.Error
 import Control.Monad ((<=<), filterM)
 import qualified Data.ByteString as B
 import Data.ByteString (ByteString)
+import qualified Data.Map.Lazy as M
 import System.Directory
 import System.FilePath
 import System.IO
@@ -121,12 +122,13 @@ extractDirTreeDB =
 queryBoolTermCap :: TIDatabase
                  -> BoolTermCap
                  -> Bool
-queryBoolTermCap (TIDatabase vals _ _) cap = $mkBoolGetter cap vals
+queryBoolTermCap (TIDatabase (TCBMap vals) _ _) cap =
+    fromMaybe False $ M.lookup cap vals
 
 queryNumTermCap :: TIDatabase
                 -> NumTermCap
                 -> Maybe Int
-queryNumTermCap (TIDatabase _ vals _) cap = $mkNumGetter cap vals
+queryNumTermCap (TIDatabase _ (TCNMap vals) _) cap = M.lookup cap vals
 
 -- | As this is a dead simple module, no \'smart\' handling of the
 -- returned string is implemented. In particular, placeholders for
@@ -135,7 +137,7 @@ queryNumTermCap (TIDatabase _ vals _) cap = $mkNumGetter cap vals
 queryStrTermCap :: TIDatabase
                 -> StrTermCap
                 -> Maybe String
-queryStrTermCap (TIDatabase _ _ vals) cap = $mkStrGetter cap vals
+queryStrTermCap (TIDatabase _ _ (TCSMap vals)) cap = M.lookup cap vals
 
 --
 -- DOCUMENTATION
