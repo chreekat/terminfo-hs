@@ -7,9 +7,14 @@ module System.Terminfo.Types
     , StrCapValues(..)
     ) where
 
-import System.Terminfo.TH
+import Data.Map.Lazy (Map)
+import qualified Data.Map.Lazy as M
 
-mkCapValues
+import System.Terminfo.Caps
+
+type BoolCapValues = Map BoolTermCap Bool
+type NumCapValues = Map NumTermCap Int
+type StrCapValues = Map StrTermCap String
 
 data TIDatabase = TIDatabase BoolCapValues NumCapValues StrCapValues
     deriving (Show)
