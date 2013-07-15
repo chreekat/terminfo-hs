@@ -16,13 +16,17 @@ module System.Terminfo.DirTreeDB
     ( parseDirTreeDB
     ) where
 
+import Development.Placeholders
+
 import Control.Applicative ((<$>), (<*>))
-import Control.Monad (when, void)
+import Control.Arrow ((***), second)
+import Control.Monad ((<=<), when, void)
 import Data.Attoparsec as A
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.Char (chr)
 import Data.List (foldl')
+import qualified Data.Map.Lazy as M
 import Data.Maybe (catMaybes)
 import Data.Monoid (mconcat)
 import Data.Word (Word16)
@@ -66,40 +70,42 @@ tiDatabase = do
     bools <- boolCaps boolSize
     -- Align on an even byte
     when (odd boolSize) (void $ A.take 1)
-    nums <- numCaps numIntegers
-    strs <- stringCaps numOffsets stringSize
+    {-nums <- numCaps numIntegers-}
+    {-strs <- stringCaps numOffsets stringSize-}
     -- TODO: extended info
-    return $ mconcat [bools, nums, strs]
+    return $ bools -- mconcat [bools, nums, strs]
 
 boolCaps :: Int -> Parser TIDatabase
-boolCaps sz = do
-    bytes <- B.unpack <$> A.take sz
-    let setters = zipWith fixVal bytes $mkBoolSetters
-    return $ foldl' (flip ($)) ($mkBoolCapsMempty) setters
+boolCaps =
+    return . M.fromList . wrap . zip keys . map (== 1) . B.unpack
+        <=< A.take
   where
-    fixVal b f = f $ b == 1
+    wrap = map (BoolKey *** BoolVal)
+    {-keys :: [BoolTermCap]-}
+    keys = [minBound ..]
+
 
 numCaps :: Int -> Parser TIDatabase
-numCaps cnt = do
-    ints <- map maybePositive <$> A.count cnt anyShortInt
-    let setters = zipWith ($) $mkNumSetters ints
-    return $ foldl' (flip ($)) ($mkNumCapsMempty) setters
+numCaps cnt = $notImplemented -- do
+    {-ints <- map maybePositive <$> A.count cnt anyShortInt-}
+    {-let setters = zipWith ($) $mkNumSetters ints-}
+    {-return $ foldl' (flip ($)) ($mkNumCapsMempty) setters-}
 
 stringCaps :: Int -> Int -> Parser TIDatabase
-stringCaps numOffsets stringSize = do
-    offs <- map maybePositive <$> A.count numOffsets anyShortInt
-    stringTable <- A.take stringSize
-    let values = map (parseStringMay stringTable) offs
-        setters = zipWith ($) $mkStrSetters values
-    return $ foldl' (flip ($)) ($mkStrCapsMempty) setters
-  where
-    parseStringMay :: ByteString -> Maybe Int -> Maybe String
-    parseStringMay = fmap . flip parseString
+stringCaps numOffsets stringSize = $notImplemented -- do
+    {-offs <- map maybePositive <$> A.count numOffsets anyShortInt-}
+    {-stringTable <- A.take stringSize-}
+    {-let values = map (parseStringMay stringTable) offs-}
+        {-setters = zipWith ($) $mkStrSetters values-}
+    {-return $ foldl' (flip ($)) ($mkStrCapsMempty) setters-}
+  {-where-}
+    {-parseStringMay :: ByteString -> Maybe Int -> Maybe String-}
+    {-parseStringMay = fmap . flip parseString-}
 
-    parseString :: Int -> ByteString -> String
-    parseString offset = asString . B.takeWhile (/= 0) . B.drop offset
-      where
-        asString = map (chr . fromIntegral) . B.unpack
+    {-parseString :: Int -> ByteString -> String-}
+    {-parseString offset = asString . B.takeWhile (/= 0) . B.drop offset-}
+      {-where-}
+        {-asString = map (chr . fromIntegral) . B.unpack-}
 
 maybePositive :: Int -> Maybe Int
 maybePositive i = if i /= (-1)

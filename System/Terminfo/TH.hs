@@ -108,10 +108,11 @@ mkTermCaps = sequence
     , mkTermCap "StrTermCap" stringList
     ]
 
-mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors [mkName "Ord", mkName "Eq"]
+mkTermCap name ls = dataD (cxt []) (mkName name) [] ctors derivings
   where
     ctors = map ctor ls
     ctor l = normalC (mkName $ upCase l) []
+    derivings = map mkName ["Ord", "Eq", "Enum", "Bounded", "Show"]
 
 -- Used below too
 upCase (c:cs) = toUpper c : cs
