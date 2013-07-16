@@ -30,6 +30,7 @@ source-repository head
   location: https://github.com/chreekat/terminfo-hs
 
 library
+  ghc-options:         -Wall
   exposed-modules:     System.Terminfo
   other-modules:       System.Terminfo.DBParse,
                        System.Terminfo.Types

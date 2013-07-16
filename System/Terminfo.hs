@@ -83,9 +83,10 @@ findDBFile term = case term of
     _     -> hoistEither $ Left "User specified null terminal name"
   where
     orLeft = flip noteT
-    dbFileM c term = dirTreeDB c term <|> berkeleyDB
+    dbFileM c t = dirTreeDB c t <|> berkeleyDB
 
 -- | Not implemented
+berkeleyDB :: MaybeT IO (DBType, FilePath)
 berkeleyDB = nothing
 
 dirTreeDB :: Char -> String -> MaybeT IO (DBType, FilePath)
