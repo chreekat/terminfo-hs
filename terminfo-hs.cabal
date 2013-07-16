@@ -1,5 +1,5 @@
 name:                terminfo-hs
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            A pure-Haskell (no FFI) module for accessing terminfo databases
 description:         This module can acquire terminfo databases and query
                      them for terminal capabilities. For details of
@@ -25,12 +25,12 @@ source-repository head
 
 source-repository this
   type: git
-  tag: 0.1.0.0
+  tag: 0.1.0.1
   location: https://github.com/chreekat/terminfo-hs/tree/0.1.0.0
 
 library
   ghc-options:         -Wall
-  exposed-modules:     System.Terminfo
+  exposed-modules:     System.Terminfo, System.Terminfo.Caps
   other-modules:       System.Terminfo.DBParse,
                        System.Terminfo.Types
                        System.Terminfo.Internal
