@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/chreekat/terminfo-hs
 
+source-repository this
+  type: git
+  location: https://github.com/chreekat/terminfo-hs/tree/0.1.0.0
+
 library
   ghc-options:         -Wall
   exposed-modules:     System.Terminfo
