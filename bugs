@@ -2,4 +2,4 @@ Make a canonical doc source | id:2c986f55a3167ba533598b0f8efecc7588dd2162
 Add a golden test for the parser | id:2c9df1f015d4c9bce88551b2345c757fffe8d983
 readme for github | id:50470c2c11bc610e16b3156b035a6d98b004e5c7
 Parse extended info | id:7bc76b980c6556bbe582177ffda36f2e09cb9beb
-5 | id:ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4
+Try out using type families | id:a4a593e092fe599544c4fd7af6fee8a1333a66f1
