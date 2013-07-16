@@ -1,6 +1,7 @@
 module System.Terminfo.Internal
     ( terminfoDBLocs
     , locationsPure
+    , parseTDVar
     ) where
 
 import Control.Applicative ((<$>), (<*>), pure)
