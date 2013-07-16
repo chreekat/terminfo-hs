@@ -61,7 +61,7 @@ import System.FilePath
 import System.IO
 
 import System.Terminfo.Types
-import System.Terminfo.DirTreeDB
+import System.Terminfo.DBParse
 import System.Terminfo.Internal (terminfoDBLocs)
 import System.Terminfo.Caps
 
@@ -107,7 +107,7 @@ parseDBFile (db, f) = case db of
 extractDirTreeDB :: FilePath
                  -> EIO TIDatabase
 extractDirTreeDB =
-    hoistEither . parseDirTreeDB
+    hoistEither . parseDB
     <=< rightT . B.hGetContents
     <=< rightT . flip openBinaryFile ReadMode
   where

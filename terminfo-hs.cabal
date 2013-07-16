@@ -31,7 +31,7 @@ source-repository head
 
 library
   exposed-modules:     System.Terminfo
-  other-modules:       System.Terminfo.DirTreeDB,
+  other-modules:       System.Terminfo.DBParse,
                        System.Terminfo.Types
                        System.Terminfo.Internal
   build-depends:       base ==4.*, errors ==1.*,
