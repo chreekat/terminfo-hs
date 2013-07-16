@@ -1,19 +1,13 @@
 name:                terminfo-hs
 version:             0.1.0.0
 synopsis:            A pure-Haskell (no FFI) module for accessing terminfo databases
-description:         This module accesses terminfo databases, which contain
-                     characteristics, or capabilities, for the various
-                     terminals such as screen, vt100, or xterm. Among other
-                     things, the capabilities include the idiosyncratic
-                     character sequences needed to send commands to the
-                     terminal. These commands include things like cursor
-                     movement.
-
-                     For a deeper understanding of terminfo, consult the
-                     man pages for term(5) and terminfo(5).
+description:         This module can acquire terminfo databases and query
+                     them for terminal capabilities. For details of
+                     terminfo, consult the man pages for term(5) and
+                     terminfo(5).
 
                      This package is dead simple, and doesn't do anything
-                     fancy with the capabilities themselves; it merely
+                     fancy with the capabilities themselves. It merely
                      provides a means for accessing them.
 
 license:             BSD3
@@ -21,7 +15,7 @@ license-file:        LICENSE
 author:              Bryan Richter
 maintainer:          bryan.richter@gmail.com
 copyright:           Bryan Richter, 2013
-category:            System
+category:            System, Terminal
 build-type:          Simple
 cabal-version:       >=1.8
 
@@ -31,6 +25,7 @@ source-repository head
 
 source-repository this
   type: git
+  tag: 0.1.0.0
   location: https://github.com/chreekat/terminfo-hs/tree/0.1.0.0
 
 library
