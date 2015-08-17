@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 import Test.QuickCheck
-import Test.QuickCheck.All
 import System.Terminfo.Internal
 
 import Data.Maybe
@@ -38,5 +38,7 @@ prop_terminfoDirsOverridesDefaults tds =
 
 prop_useDefaults defs =
     locationsPure Nothing Nothing Nothing defs == defs
+
+return []
 
 main = $quickCheckAll

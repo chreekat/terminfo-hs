@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE CPP #-}
 
 -- |
 -- Module      :  System.Terminfo.DBParse
@@ -15,11 +16,13 @@ module System.Terminfo.DBParse
     ( parseDB
     ) where
 
+#if ! MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>), (<*>))
+#endif
 import Control.Arrow ((***))
 import qualified Control.Arrow as Arr
 import Control.Monad ((<=<), when, void)
-import Data.Attoparsec as A
+import Data.Attoparsec.ByteString as A
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.Char (chr)
@@ -110,11 +113,11 @@ magic :: Parser Int
 magic = shortInt 0o432 <?> "Not a terminfo file (bad magic)"
 
 data Header = Header
-     { namesSize :: Int
-     , boolSize :: Int
-     , numIntegers :: Int
-     , numOffsets :: Int
-     , stringSize :: Int
+     { namesSize :: !Int
+     , boolSize :: !Int
+     , numIntegers :: !Int
+     , numOffsets :: !Int
+     , stringSize :: !Int
      }
      deriving (Show)
 

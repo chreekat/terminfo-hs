@@ -1,10 +1,13 @@
+{-# LANGUAGE CPP #-}
 module System.Terminfo.Internal
     ( terminfoDBLocs
     , locationsPure
     , parseTDVar
     ) where
 
+#if ! MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>), (<*>), pure)
+#endif
 import Control.Error
 import System.Environment (lookupEnv)
 import System.FilePath

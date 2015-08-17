@@ -1,20 +1,19 @@
-name:                terminfo-hs
-version:             0.1.0.1
-synopsis:            A pure-Haskell (no FFI) module for accessing terminfo databases
-description:         This module can acquire terminfo databases and query
-                     them for terminal capabilities. For details of
-                     terminfo, consult the man pages for term(5) and
-                     terminfo(5).
+name: terminfo-hs
+version: 0.2.0
+synopsis: A pure-Haskell (no FFI) module for accessing terminfo databases
+description:
+    This module can acquire terminfo databases and query them for terminal
+    capabilities. For details of terminfo, consult the man pages for
+    term(5) and terminfo(5).
 
-                     This package is dead simple, and doesn't do anything
-                     fancy with the capabilities themselves. It merely
-                     provides a means for accessing them.
+    This package is dead simple, and doesn't do anything fancy with the
+    capabilities themselves. It merely provides a means for accessing them.
 
 license:             BSD3
 license-file:        LICENSE
 author:              Bryan Richter
 maintainer:          bryan.richter@gmail.com
-copyright:           Bryan Richter, 2013
+copyright:           Bryan Richter, 2013–2015
 category:            System, Terminal
 build-type:          Simple
 cabal-version:       >=1.8
@@ -25,22 +24,29 @@ source-repository head
 
 source-repository this
   type: git
-  tag: 0.1.0.1
-  location: https://github.com/chreekat/terminfo-hs/tree/0.1.0.0
+  tag: 0.2.0
+  location: https://github.com/chreekat/terminfo-hs.git
 
 library
-  ghc-options:         -Wall
-  exposed-modules:     System.Terminfo, System.Terminfo.Caps
-  other-modules:       System.Terminfo.DBParse,
-                       System.Terminfo.Types
-                       System.Terminfo.Internal
-  build-depends:       base ==4.*, errors ==1.*,
-                       bytestring ==0.*, directory ==1.*,
-                       filepath ==1.*, attoparsec ==0.*,
-                       containers ==0.5.*
+  exposed-modules: System.Terminfo,
+                   System.Terminfo.Caps
+                   System.Terminfo.Internal
+  other-modules: System.Terminfo.DBParse,
+                 System.Terminfo.Types
+  build-depends: base,
+                 errors,
+                 bytestring,
+                 directory,
+                 filepath,
+                 attoparsec,
+                 containers
 
-test-suite System.Terminfo.Internal
-  type:                exitcode-stdio-1.0
-  main-is:             test.hs
-  build-depends:       base ==4.*, filepath ==1.*, directory ==1.*,
-                       errors ==1.*, QuickCheck
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: test.hs
+  build-depends: base,
+                 filepath,
+                 directory,
+                 errors,
+                 QuickCheck,
+                 terminfo-hs

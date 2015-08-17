@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 -- |
 -- Module      :  System.Terminfo
 -- Copyright   :  (c) Bryan Richter (2013)
@@ -51,7 +52,11 @@ module System.Terminfo (
 
     ) where
 
+#if MIN_VERSION_base(4,8,0)
+import Control.Applicative ((<|>))
+#else
 import Control.Applicative ((<$>), (<|>))
+#endif
 import Control.Error
 import Control.Monad ((<=<), filterM)
 import qualified Data.ByteString as B
@@ -65,17 +70,28 @@ import System.Terminfo.DBParse
 import System.Terminfo.Internal (terminfoDBLocs)
 import System.Terminfo.Caps
 
+#if MIN_VERSION_base(4,8,0)
+exceptT :: m (Either e a) -> ExceptT e m a
+exceptT = ExceptT
+#else
+type ExceptT = EitherT
+runExceptT :: EitherT e m a -> m (Either e a)
+runExceptT = runEitherT
+exceptT :: m (Either e a) -> EitherT e m a
+exceptT = EitherT
+#endif
+
 data DBType = BerkeleyDB | DirTreeDB
     deriving(Show)
 
 -- Old MacDonald had a farm...
-type EIO = EitherT String IO
+type EIO = ExceptT String IO
 
 acquireDatabase
     :: String -- ^ System name
     -> IO (Either String TIDatabase)
        -- ^ A database object for the terminal, if it exists.
-acquireDatabase = runEitherT . (parseDBFile <=< findDBFile)
+acquireDatabase = runExceptT . (parseDBFile <=< findDBFile)
 
 findDBFile :: String -> EIO (DBType, FilePath)
 findDBFile term = case term of
@@ -112,7 +128,7 @@ extractDirTreeDB =
     <=< rightT . B.hGetContents
     <=< rightT . flip openBinaryFile ReadMode
   where
-    rightT = EitherT . fmap Right
+    rightT = exceptT . fmap Right
 
 queryBoolTermCap :: TIDatabase
                  -> BoolTermCap
