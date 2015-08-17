@@ -34,7 +34,7 @@ library
                    System.Terminfo.Internal
   other-modules: System.Terminfo.DBParse,
                  System.Terminfo.Types
-  build-depends: base,
+  build-depends: base <= 4.8,
                  errors,
                  bytestring,
                  directory,
