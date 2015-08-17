@@ -70,7 +70,7 @@ import System.Terminfo.DBParse
 import System.Terminfo.Internal (terminfoDBLocs)
 import System.Terminfo.Caps
 
-#if MIN_VERSION_base(4,8,0)
+#if MIN_VERSION_errors(2,0,0)
 except :: m (Either e a) -> ExceptT e m a
 except = ExceptT
 #else
