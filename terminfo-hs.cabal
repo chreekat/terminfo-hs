@@ -28,6 +28,7 @@ source-repository this
   location: https://github.com/chreekat/terminfo-hs.git
 
 library
+  hs-source-dirs: src
   exposed-modules: System.Terminfo,
                    System.Terminfo.Caps
                    System.Terminfo.Internal
@@ -43,6 +44,7 @@ library
 
 test-suite test
   type: exitcode-stdio-1.0
+  hs-source-dirs: test
   main-is: test.hs
   build-depends: base,
                  filepath,

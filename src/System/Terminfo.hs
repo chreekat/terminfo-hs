@@ -71,14 +71,14 @@ import System.Terminfo.Internal (terminfoDBLocs)
 import System.Terminfo.Caps
 
 #if MIN_VERSION_base(4,8,0)
-exceptT :: m (Either e a) -> ExceptT e m a
-exceptT = ExceptT
+except :: m (Either e a) -> ExceptT e m a
+except = ExceptT
 #else
 type ExceptT = EitherT
 runExceptT :: EitherT e m a -> m (Either e a)
 runExceptT = runEitherT
-exceptT :: m (Either e a) -> EitherT e m a
-exceptT = EitherT
+except :: m (Either e a) -> EitherT e m a
+except = EitherT
 #endif
 
 data DBType = BerkeleyDB | DirTreeDB
@@ -128,7 +128,7 @@ extractDirTreeDB =
     <=< rightT . B.hGetContents
     <=< rightT . flip openBinaryFile ReadMode
   where
-    rightT = exceptT . fmap Right
+    rightT = except . fmap Right
 
 queryBoolTermCap :: TIDatabase
                  -> BoolTermCap
