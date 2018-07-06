@@ -1,5 +1,5 @@
 name: terminfo-hs
-version: 0.2.0
+version: 0.2.1.1
 synopsis: A pure-Haskell (no FFI) module for accessing terminfo databases
 description:
     This module can acquire terminfo databases and query them for terminal
@@ -12,11 +12,12 @@ description:
 license:             BSD3
 license-file:        LICENSE
 author:              Bryan Richter
-maintainer:          bryan.richter@gmail.com
-copyright:           Bryan Richter, 2013–2015
+maintainer:          Bryan Richter <b@chreekat.net>
+copyright:           Bryan Richter, 2013–2018
 category:            System, Terminal
 build-type:          Simple
 cabal-version:       >=1.8
+extra-source-files:  CHANGELOG.md
 
 source-repository head
   type: git
@@ -24,7 +25,7 @@ source-repository head
 
 source-repository this
   type: git
-  tag: 0.2.0
+  tag: 0.2.1.1
   location: https://github.com/chreekat/terminfo-hs.git
 
 library
